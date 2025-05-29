@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="container pt-5">
         <div className="row">
           <div className="col-md-12 text-center">
-          <img src={logo} alt="Logo" style={{ width: '70px', height: 'auto' }} />
+          {/* <img src={logo} alt="Logo" style={{ width: '70px', height: 'auto' }} /> */}
             <h5 className="my-3">ABOUT THE SHOP</h5>
             <p>
               Jewels Shop is your destination for Sikh Style. Started in 2015, we have been serving customers all over the world with our premium quality turbans and accessories. Your style is unique to you and we want to ensure you can create the best version of yourself.
