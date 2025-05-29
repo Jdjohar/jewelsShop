@@ -122,7 +122,7 @@ const CheckoutForm = () => {
 
       // Step 2: Create a customer
       const amount = calculateTotal() * 100;
-      const customerResponse = await fetch('http://localhost:5000/api/auth/create-customer', {
+      const customerResponse = await fetch('https://jewelsshop.onrender.com/api/auth/create-customer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -150,7 +150,7 @@ const CheckoutForm = () => {
       const customerId = customerData.customerId;
 
       // Step 3: Send the payment method ID to the /payment endpoint
-      const response = await fetch('http://localhost:5000/api/auth/payment', {
+      const response = await fetch('https://jewelsshop.onrender.com/api/auth/payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -216,7 +216,7 @@ const CheckoutForm = () => {
       const userid = localStorage.getItem('userId');
       const useremail = localStorage.getItem('userEmail');
       if (paymentIntent && paymentIntent.status === 'succeeded') {
-        const checkoutResponse = await fetch("http://localhost:5000/api/auth/checkoutOrder", {
+        const checkoutResponse = await fetch("https://jewelsshop.onrender.com/api/auth/checkoutOrder", {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -25,7 +25,7 @@ const AddCategory = () => {
     formData.append('img', categoryData.img);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/addcategory', {
+      const response = await fetch('https://jewelsshop.onrender.com/api/auth/addcategory', {
         method: 'POST',
         body: formData,
       });

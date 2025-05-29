@@ -17,7 +17,7 @@ const OrdersList = () => {
     const fetchOrders = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('http://localhost:5000/api/auth/orders');
+        const response = await fetch('https://jewelsshop.onrender.com/api/auth/orders');
         let result = await response.json();
         console.log(result, "Result");
     
@@ -58,7 +58,7 @@ const OrdersList = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/orders/${id}`, {
+      const response = await fetch(`https://jewelsshop.onrender.com/api/auth/orders/${id}`, {
         method: 'DELETE',
       });
 

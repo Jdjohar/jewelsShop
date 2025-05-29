@@ -20,7 +20,7 @@ const AddProduct = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/auth/categories');
+        const response = await fetch('https://jewelsshop.onrender.com/api/auth/categories');
         if (response.ok) {
           const data = await response.json();
           setCategories(data.data);
@@ -84,7 +84,7 @@ const AddProduct = () => {
     formData.append('options', opt);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/addproducts', {
+      const response = await fetch('https://jewelsshop.onrender.com/api/auth/addproducts', {
         method: 'POST',
         body: formData,
       });
