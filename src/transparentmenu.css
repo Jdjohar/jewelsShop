@@ -1,0 +1,16 @@
+
+  /* Custom CSS for Transparent Navbar over Slider */
+  .home .navbar {
+    position: absolute !important; /* Positioned over the slider */
+    top: 0;
+    left: 0;
+    width: 100%;
+   /* background-color: rgba(0, 0, 0, 0.5); */ /* Transparent background */
+    z-index: 1000; /* Ensure it's above the slider */
+  }
+  .home .nav-link {
+    color: white !important; /* White text for nav links */
+  }
+  .home .navbar-brand {
+    color: white !important; /* White text for brand */
+  }
