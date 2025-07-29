@@ -38,6 +38,7 @@ const checkoutSchema = new Schema({
     orderDate: { type: Date, default: Date.now }, // Order date
     totalAmount: { type: Number, required: true }, // Total amount paid
     currency: { type: String, required: false }, // Total amount paid
+    orderId: { type: String, required: false }, // Total amount paid
     orderStatus: { type: String, enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'], default: 'Processing' }, // Payment status
     shippingMethod: { type: String, required: true }, // e.g. 'Canada Post'
     shippingCost: { type: Number, default: 0 }, // Shipping cost

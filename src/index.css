@@ -1,263 +1,28 @@
+/* Add this to your global CSS or App.css */
 
-body {
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
-.textColorBlack {
-  color:#222222 ;
-}
-
-/* Category Cards */
-.category-card {
-  position: relative;
+.notification-bar {
+  height: 30px;
+  line-height: 30px;
   overflow: hidden;
-  border-radius: 8px;
-  height: 300px;
-}
-
-.category-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.category-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.category-card:hover .category-overlay {
-  opacity: 1;
-}
-
-.category-card:hover img {
-  transform: scale(1.1);
-}
-
-
-
-/* Product Cards */
-.product-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: none;
-}
-
-.product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.product-card img {
-  height: 250px;
-  object-fit: cover;
-}
-
-.card-title {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-}
-
-.card-text {
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 1rem;
-}
-/* Carousel Images */
-
-
-/* Promo Images (slide1, slide2, slide3) */
-.promo-img {
-  object-fit: cover;
-  height: 250px; /* Fixed height for consistency */
-}
-
-/* Category Images */
-.category-img {
-  object-fit: cover;
-  height: 200px; /* Fixed height for category images */
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .carousel-img {
-    height: 40vh; /* Reduce height on tablets and smaller */
-  }
-  .promo-img {
-    height: 180px; /* Smaller height for mobile */
-  }
-  .category-img {
-    height: 150px; /* Smaller height for mobile */
-  }
-}
-
-@media (max-width: 576px) {
-  .carousel-img {
-    height: auto !important; /* Even shorter on small mobile screens */
-  }
-  .promo-img {
-    height: 150px;
-  }
-  .category-img {
-    height: 120px;
-  }
-}
-
-/* Overlay Styling (for categories) */
-.gallery-item {
+  z-index: 1050; /* Higher than navbar (default 1030) */
   position: relative;
 }
 
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scroll-left 15s linear infinite;
 }
 
-.gallery-item:hover .overlay {
-  opacity: 1;
-}
-
-/* Reset default styles */
-
-/* Main container */
-.thank-you-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); /* Subtle gradient background */
-  font-family: 'Arial', sans-serif;
-}
-
-/* Content wrapper */
-.thank-you-content {
-  text-align: center;
-  background: #ffffff;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
-  max-width: 500px;
-  width: 100%;
-}
-
-/* Header text */
-.thank-you-header h1 {
-  font-size: 2.5rem;
-  color: #1a3c34; /* Dark teal for a modern, trustworthy vibe */
-  margin-bottom: 10px;
-}
-
-.thank-you-subtext {
-  font-size: 1.1rem;
-  color: #666;
-  margin-bottom: 20px;
-}
-
-/* SVG animation */
-.svg-container {
-  margin: 20px 0;
-}
-
-.animate-check {
-  animation: checkAnimation 0.5s ease-in-out;
-}
-
-@keyframes checkAnimation {
-  0% {
-    transform: scale(0);
-    opacity: 0;
+@keyframes scroll-left {
+  from {
+    transform: translateX(100%);
   }
-  50% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
+  to {
+    transform: translateX(-100%);
   }
 }
-
-/* Button styling */
-.back-to-home-button {
-  background-color: #28a745; /* Green to match the success theme */
-  color: #fff;
-  border: none;
-  padding: 12px 24px;
-  font-size: 1rem;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+/* App.css or Navbar component-specific style */
+.navbar {
+  margin-top: 30px; /* Same as .notification-bar height */
 }
-
-.back-to-home-button:hover {
-  background-color: #218838; /* Darker green on hover */
-  transform: translateY(-2px); /* Slight lift effect */
-}
-
-.back-to-home-button:active {
-  transform: translateY(0); /* Reset on click */
-}
-.carousalImg{
-  object-fit: contain !important;
-}
-
-.thank-you-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh; /* Adjust as per your layout */
-  font-size: 24px; /* Adjust font size as needed */
-}
-
-.thank-you-text {
-  margin-bottom: 20px;
-}
-
-.svg-container {
-  width: 50px; /* Adjust width of SVG container */
-  height: 50px; /* Adjust height of SVG container */
-}
-
-/* CSS animation for SVG icon */
-.feather {
-  animation: feather-spin 2s infinite linear;
-}
-
-@keyframes feather-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-

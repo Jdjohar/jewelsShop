@@ -33,6 +33,10 @@ const UserSchema = new Schema({
         enum: ['user', 'admin'], // Role can be 'user' or 'admin'
         default: 'user' // Default role is 'user'
     },
+    stripeCustomerId: {
+        type: String, // Store Stripe customer ID
+        default: null,
+    },
     date:{
         type:Date,
         default:Date.now

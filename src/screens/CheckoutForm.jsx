@@ -2,9 +2,33 @@ import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart, useDispatchCart } from '../components/ContextReducer';
-import Navbar from '../components/Navbar2';
+import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
+
+// Australian address data (simplified for demonstration)
+const australianStates = [
+  { code: 'NSW', name: 'New South Wales', postalRange: ['2000', '2999'] },
+  { code: 'VIC', name: 'Victoria', postalRange: ['3000', '3999'] },
+  { code: 'QLD', name: 'Queensland', postalRange: ['4000', '4999'] },
+  { code: 'WA', name: 'Western Australia', postalRange: ['6000', '6999'] },
+  { code: 'SA', name: 'South Australia', postalRange: ['5000', '5999'] },
+  { code: 'TAS', name: 'Tasmania', postalRange: ['7000', '7999'] },
+  { code: 'ACT', name: 'Australian Capital Territory', postalRange: ['2600', '2699'] },
+  { code: 'NT', name: 'Northern Territory', postalRange: ['0800', '0999'] },
+];
+
+// Sample cities by state (extend for production)
+const australianCities = {
+  NSW: ['Sydney', 'Newcastle', 'Wollongong'],
+  VIC: ['Melbourne', 'Geelong', 'Ballarat'],
+  QLD: ['Brisbane', 'Gold Coast', 'Cairns'],
+  WA: ['Perth', 'Fremantle', 'Broome'],
+  SA: ['Adelaide', 'Mount Gambier', 'Whyalla'],
+  TAS: ['Hobart', 'Launceston', 'Devonport'],
+  ACT: ['Canberra'],
+  NT: ['Darwin', 'Alice Springs'],
+};
 
 const CheckoutForm = () => {
   const [loading, setLoading] = useState(false);
@@ -29,16 +53,20 @@ const CheckoutForm = () => {
   const stripe = useStripe();
   const elements = useElements();
   const dispatch = useDispatchCart();
+  const [billingErrors, setBillingErrors] = useState({});
+  const [shippingErrors, setShippingErrors] = useState({});
   const navigate = useNavigate();
   const [shippingMethod, setShippingMethod] = useState('Free');
+
   const getShippingCost = () => {
-    switch (shippingMethod) {
-      case 'Standard': return 9.99;
-      case 'OneDay': return 15.0;
-      default: return 0;
-    }
+    const subtotal = cart.reduce((total, item) => total + parseFloat(item.price), 0);
+    return subtotal >= 99 ? 0 : 9.99;
   };
 
+  const calculateSubtotal = () => {
+    return cart.reduce((total, item) => total + parseFloat(item.price), 0);
+  };
+  const userid = localStorage.getItem('userId');
 
   useEffect(() => {
     const getCart = localStorage.getItem('cart');
@@ -60,11 +88,13 @@ const CheckoutForm = () => {
     return total;
   };
   const calculateTotal = () => {
-    const subtotal = cart.reduce((total, item) => total + item.price * item.qty, 0);
-    const tax = subtotal * 0.1; // 10% tax
-    const shipping = getShippingCost();
-    return subtotal + tax + shipping;
+    const subtotal = cart.reduce((total, item) => total + parseFloat(item.price), 0);
+    const tax = subtotal * 0.1; // 10% GST
+    const shipping = subtotal >= 99 ? 0 : 9.99;
+
+    return parseFloat((subtotal + tax + shipping).toFixed(2));
   };
+
 
   const handleCardChange = (event) => {
     if (event.error) {
@@ -73,6 +103,44 @@ const CheckoutForm = () => {
       setCardError(null);
     }
   };
+  const validateAustralianAddress = (address, isBilling = true) => {
+    const errors = {};
+    if (address.country === 'AU') {
+      if (!australianStates.some(s => s.code === address.province)) {
+        errors.province = 'Please select a valid Australian state/territory.';
+      }
+      if (!australianCities[address.province]?.includes(address.city)) {
+        errors.city = 'Please select a valid city for the selected state.';
+      }
+      const postalCode = address.postalCode;
+      const state = australianStates.find(s => s.code === address.province);
+      if (
+        !postalCode.match(/^\d{4}$/) ||
+        !state ||
+        parseInt(postalCode, 10) < parseInt(state.postalRange[0], 10) ||
+        parseInt(postalCode, 10) > parseInt(state.postalRange[1], 10)
+      ) {
+        errors.postalCode = `Please enter a valid 4-digit postal code for ${state?.name || 'the selected state'}.`;
+      }
+    }
+    isBilling ? setBillingErrors(errors) : setShippingErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateAddress = (address) => {
+    return (
+      address.firstName &&
+      address.lastName &&
+      address.email &&
+      address.phone &&
+      address.streetAddress &&
+      address.city &&
+      address.province &&
+      address.postalCode &&
+      address.country
+    );
+  };
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -85,8 +153,26 @@ const CheckoutForm = () => {
       return;
     }
 
-    if (!billingAddress.firstName || !billingAddress.email || !billingAddress.phone) {
+    if (!validateAddress(billingAddress)) {
       setError("Please fill in all required billing address fields.");
+      setLoading(false);
+      return;
+    }
+
+    if (!sameAsBilling && !validateAddress(shippingAddress)) {
+      setError("Please fill in all required shipping address fields.");
+      setLoading(false);
+      return;
+    }
+
+    if (billingAddress.country === 'AU' && !validateAustralianAddress(billingAddress, true)) {
+      setError("Please correct the billing address errors.");
+      setLoading(false);
+      return;
+    }
+
+    if (!sameAsBilling && shippingAddress.country === 'AU' && !validateAustralianAddress(shippingAddress, false)) {
+      setError("Please correct the shipping address errors.");
       setLoading(false);
       return;
     }
@@ -121,7 +207,10 @@ const CheckoutForm = () => {
       const paymentMethodId = paymentMethod.id;
 
       // Step 2: Create a customer
-      const amount = calculateTotal() * 100;
+      const amount = calculateTotal();
+      console.log(calculateTotal(), "amdsdsdsdssddsdsdsdsdount");
+      console.log(amount.toFixed(2), "dsdsddsdssddsdsds");
+
       const customerResponse = await fetch('https://jewelsshop.onrender.com/api/auth/create-customer', {
         method: 'POST',
         headers: {
@@ -158,6 +247,7 @@ const CheckoutForm = () => {
         body: JSON.stringify({
           amount,
           customerId,
+          uemail: billingAddress.email,
           paymentMethodId, // Send the payment method ID
           billingAddress: {
             name: billingAddress.firstName,
@@ -185,7 +275,7 @@ const CheckoutForm = () => {
             email: shippingAddress.email,
             phone: shippingAddress.phone,
           },
-          description: 'Export of 100 cotton t-shirts, size M, color blue',
+          description: 'Store name Payment',
         }),
       });
 
@@ -194,6 +284,8 @@ const CheckoutForm = () => {
       }
 
       const responseData = await response.json();
+      console.log("responseData:", responseData);
+
       const clientSecret = responseData.clientSecret;
 
       if (!clientSecret) {
@@ -213,7 +305,7 @@ const CheckoutForm = () => {
         return;
       }
 
-      const userid = localStorage.getItem('userId');
+
       const useremail = localStorage.getItem('userEmail');
       if (paymentIntent && paymentIntent.status === 'succeeded') {
         const checkoutResponse = await fetch("https://jewelsshop.onrender.com/api/auth/checkoutOrder", {
@@ -223,22 +315,25 @@ const CheckoutForm = () => {
           },
           body: JSON.stringify({
             userId: userid,
-            userEmail: useremail || billingAddress.email,
+            userEmail: billingAddress.email || useremail,
             orderItems: cart,
+            orderId: responseData.orderId,
             email: billingAddress.email,
             orderDate: new Date().toDateString(),
             billingAddress: billingAddress,
             shippingAddress: shippingAddress,
             paymentMethod: 'Stripe',
-            orderStatus: "Processing",
-            shippingCost: 0,
-            paymentStatus: "paid",
+            orderStatus: "Pending",
+            shippingCost: getShippingCost(),
+            paymentStatus: "pending",
             shippingMethod: 'ByPost',
             totalAmount: paymentIntent.amount,
           }),
         });
 
         const checkoutData = await checkoutResponse.json();
+        console.log(checkoutData, "checkoutData");
+
 
         if (checkoutResponse.status === 200) {
 
@@ -283,14 +378,13 @@ const CheckoutForm = () => {
       <div className="container py-5">
         <h1 className="mb-5 py-5">Checkout</h1>
         <div className="row g-4">
-          {/* Main Content - Billing and Shipping */}
           <div className="col-lg-8">
             <div className="card shadow-sm border-0 mb-4">
               <div className="card-header bg-white py-3">
                 <h4 className="mb-0 fw-bold">Billing Address</h4>
               </div>
               <div className="card-body">
-                <form className='checkoutForm'>
+                <form className="checkoutForm">
                   <div className="row g-3">
                     <div className="col-md-6">
                       <label className="form-label">First Name</label>
@@ -338,8 +432,6 @@ const CheckoutForm = () => {
                       >
                         <option value="">Select Country</option>
                         <option value="AU">Australia</option>
-                        <option value="CA">Canada</option>
-                        {/* Add more countries as needed */}
                       </select>
                     </div>
                     <div className="col-12">
@@ -363,28 +455,68 @@ const CheckoutForm = () => {
                       />
                     </div>
                     <div className="col-md-4">
-                      <label className="form-label">City</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="City"
-                        name="city"
-                        value={billingAddress.city}
-                        onChange={handleBillingChange}
-                        required
-                      />
+                      <label className="form-label">Province/State</label>
+                      {billingAddress.country === 'AU' ? (
+                        <select
+                          className="form-control"
+                          name="province"
+                          value={billingAddress.province}
+                          onChange={handleBillingChange}
+                          required
+                        >
+                          <option value="">Select State/Territory</option>
+                          {australianStates.map((state) => (
+                            <option key={state.code} value={state.code}>
+                              {state.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Province/State"
+                          name="province"
+                          value={billingAddress.province}
+                          onChange={handleBillingChange}
+                          required
+                        />
+                      )}
+                      {billingErrors.province && (
+                        <div className="text-danger small">{billingErrors.province}</div>
+                      )}
                     </div>
                     <div className="col-md-4">
-                      <label className="form-label">Province/State</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Province/State"
-                        name="province"
-                        value={billingAddress.province}
-                        onChange={handleBillingChange}
-                        required
-                      />
+                      <label className="form-label">City</label>
+                      {billingAddress.country === 'AU' && billingAddress.province ? (
+                        <select
+                          className="form-control"
+                          name="city"
+                          value={billingAddress.city}
+                          onChange={handleBillingChange}
+                          required
+                        >
+                          <option value="">Select City</option>
+                          {australianCities[billingAddress.province]?.map((city) => (
+                            <option key={city} value={city}>
+                              {city}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="City"
+                          name="city"
+                          value={billingAddress.city}
+                          onChange={handleBillingChange}
+                          required
+                        />
+                      )}
+                      {billingErrors.city && (
+                        <div className="text-danger small">{billingErrors.city}</div>
+                      )}
                     </div>
                     <div className="col-md-4">
                       <label className="form-label">Postal Code</label>
@@ -397,11 +529,14 @@ const CheckoutForm = () => {
                         onChange={handleBillingChange}
                         required
                       />
+                      {billingErrors.postalCode && (
+                        <div className="text-danger small">{billingErrors.postalCode}</div>
+                      )}
                     </div>
                     <div className="col-md-6">
                       <label className="form-label">Phone</label>
                       <input
-                        type="text"
+                        type="tel"
                         className="form-control"
                         placeholder="Phone Number"
                         name="phone"
@@ -494,6 +629,7 @@ const CheckoutForm = () => {
                           <option value="">Select Country</option>
                           <option value="AU">Australia</option>
                           <option value="CA">Canada</option>
+                          <option value="US">United States</option>
                         </select>
                       </div>
                       <div className="col-12">
@@ -517,28 +653,68 @@ const CheckoutForm = () => {
                         />
                       </div>
                       <div className="col-md-4">
-                        <label className="form-label">City</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="City"
-                          name="city"
-                          value={shippingAddress.city}
-                          onChange={handleShippingChange}
-                          required
-                        />
+                        <label className="form-label">Province/State</label>
+                        {shippingAddress.country === 'AU' ? (
+                          <select
+                            className="form-control"
+                            name="province"
+                            value={shippingAddress.province}
+                            onChange={handleShippingChange}
+                            required
+                          >
+                            <option value="">Select State/Territory</option>
+                            {australianStates.map((state) => (
+                              <option key={state.code} value={state.code}>
+                                {state.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Province/State"
+                            name="province"
+                            value={shippingAddress.province}
+                            onChange={handleShippingChange}
+                            required
+                          />
+                        )}
+                        {shippingErrors.province && (
+                          <div className="text-danger small">{shippingErrors.province}</div>
+                        )}
                       </div>
                       <div className="col-md-4">
-                        <label className="form-label">Province/State</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Province/State"
-                          name="province"
-                          value={shippingAddress.province}
-                          onChange={handleShippingChange}
-                          required
-                        />
+                        <label className="form-label">City</label>
+                        {shippingAddress.country === 'AU' && shippingAddress.province ? (
+                          <select
+                            className="form-control"
+                            name="city"
+                            value={shippingAddress.city}
+                            onChange={handleShippingChange}
+                            required
+                          >
+                            <option value="">Select City</option>
+                            {australianCities[shippingAddress.province]?.map((city) => (
+                              <option key={city} value={city}>
+                                {city}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="City"
+                            name="city"
+                            value={shippingAddress.city}
+                            onChange={handleShippingChange}
+                            required
+                          />
+                        )}
+                        {shippingErrors.city && (
+                          <div className="text-danger small">{shippingErrors.city}</div>
+                        )}
                       </div>
                       <div className="col-md-4">
                         <label className="form-label">Postal Code</label>
@@ -551,11 +727,14 @@ const CheckoutForm = () => {
                           onChange={handleShippingChange}
                           required
                         />
+                        {shippingErrors.postalCode && (
+                          <div className="text-danger small">{shippingErrors.postalCode}</div>
+                        )}
                       </div>
                       <div className="col-md-6">
                         <label className="form-label">Phone</label>
                         <input
-                          type="text"
+                          type="tel"
                           className="form-control"
                           placeholder="Phone Number"
                           name="phone"
@@ -583,9 +762,8 @@ const CheckoutForm = () => {
             </div>
           </div>
 
-          {/* Right Sidebar - Order Summary and Payment */}
           <div className="col-lg-4">
-            <div className="card border-0 shadow-sm end-0" >
+            <div className="card border-0 shadow-sm">
               <div className="card-header bg-white py-3">
                 <h5 className="mb-0 fw-bold">Order Summary ({cart.length})</h5>
               </div>
@@ -605,36 +783,37 @@ const CheckoutForm = () => {
                       <p className="mb-0 text-muted small">Qty: {item.qty}</p>
                     </div>
                     <div className="text-end">
-                      <p className="mb-0 fw-medium">${item.price.toFixed(2) }</p>
+                      <p className="mb-0 fw-medium">${parseFloat(item.price).toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
                 <hr />
                 <div className="d-flex justify-content-between mb-2">
                   <span>Subtotal</span>
-                  <span>${cart.reduce((total, item) => total + item.price, 0).toFixed(2)}</span>
+                  <span>${calculateSubtotal().toFixed(2)}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-2">
                   <span>Tax (10%)</span>
-                  <span>${(cart.reduce((total, item) => total + item.price, 0) * 0.1).toFixed(2)}</span>
+                  <span>${(calculateSubtotal() * 0.1).toFixed(2)}</span>
                 </div>
                 <div className="d-flex justify-content-between mb-2">
                   <span>Shipping</span>
                   <span>${getShippingCost().toFixed(2)}</span>
                 </div>
                 <div className="d-flex justify-content-between fw-bold border-top pt-2">
-  <span>Total Amount</span>
-  <span>
-    ${(
-      cart.reduce((total, item) => total + item.price, 0) + 
-      cart.reduce((total, item) => total + item.price, 0) * 0.1 + 
-      getShippingCost()
-    ).toFixed(2)}
-  </span>
-</div>
+                  <span>Total Amount</span>
+                  <span>${calculateTotal().toFixed(2)}</span>
+                </div>
 
+                <div className="mt-4">
+                  <label className="form-label fw-bold">Shipping Method</label>
+                  <p className="form-control-plaintext">
+                    {calculateSubtotal() >= 99 ? 'Free Shipping' : 'Standard Shipping - $9.99'}
+                  </p>
+                  <small>We deliver all our products via Australia Post for reliable and timely service.</small>
+                </div>
 
-                <h5 className="mb-3">Payment Details</h5>
+                <h5 className="mt-4 mb-3">Payment Details</h5>
                 <form onSubmit={handleSubmit}>
                   <div className="mb-3">
                     <CardElement
@@ -671,7 +850,7 @@ const CheckoutForm = () => {
                   <button
                     type="submit"
                     className="btn btn-dark rounded-pill w-100"
-                    disabled={!stripe || loading || cardError}
+                    disabled={!stripe || loading || cardError || cart.length === 0}
                   >
                     {loading ? (
                       <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -679,18 +858,6 @@ const CheckoutForm = () => {
                     {loading ? 'Processing...' : 'Pay Now'}
                   </button>
                 </form>
-              </div>
-              <div className="mb-3">
-                <label className="form-label fw-bold">Shipping Method</label>
-                <select
-                  className="form-select"
-                  value={shippingMethod}
-                  onChange={(e) => setShippingMethod(e.target.value)}
-                >
-                  <option value="Free">Free Shipping</option>
-                  <option value="Standard">Standard - $9.99</option>
-                  <option value="OneDay">One Day - $15.00</option>
-                </select>
               </div>
             </div>
           </div>

@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from 'react';
 import Card from '../components/Card';
 import Footer from '../components/Footer';
@@ -8,6 +7,7 @@ import slider2 from '../../public/slider2.webp';
 import slider3 from '../../public/slider3.jpg';
 import { Link } from 'react-router-dom';
 import { Truck, DollarSign, Clock } from 'lucide-react';
+import { Helmet } from 'react-helmet';
 
 export default function Home() {
   const [foodCat, setFoodCat] = useState([]);
@@ -34,7 +34,9 @@ export default function Home() {
 
   return (
     <div>
-
+     <Helmet>
+  <title>Punjabi Dastar, Pagg Store | Australia | Store name</title>
+</Helmet>
       <Navbar />
 
 
@@ -82,7 +84,7 @@ export default function Home() {
                     </div>
                     <div className="card-body text-center">
                       <h5 className="card-title">{category.CategoryName}</h5>
-                      <p className="card-text text-muted">Latest gadgets and tech</p>
+                     
                     </div>
                   </div>
                 </Link>
@@ -100,7 +102,7 @@ export default function Home() {
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Featured Products</h2>
-        <a href="pages/products.html" className="btn btn-outline-primary">View All</a>
+        {/* <a href="pages/products.html" className="btn btn-outline-primary">View All</a> */}
       </div>
           <div className="row">
             {featuredItems.length > 0 ? (
@@ -112,6 +114,7 @@ export default function Home() {
                     item={item}
                     options={item.options[0]}
                     ImgSrc={item.img}
+                     slug={item.slug}
                   />
                 </div>
               ))
@@ -131,7 +134,7 @@ export default function Home() {
               <i className="bi bi-truck fs-2 text-primary"></i>
             </div>
             <h5>Free Shipping</h5>
-            <p className="text-muted">On orders over $50</p>
+            <p className="text-muted">On orders over $99</p>
           </div>
         </div>
         <div className="col-md-3 col-sm-6">
@@ -140,7 +143,7 @@ export default function Home() {
               <i className="bi bi-arrow-repeat fs-2 text-primary"></i>
             </div>
             <h5>Easy Returns</h5>
-            <p className="text-muted">30 day return policy</p>
+            <p className="text-muted">5-7 day return policy</p>
           </div>
         </div>
         <div className="col-md-3 col-sm-6">
@@ -157,8 +160,8 @@ export default function Home() {
             <div className="benefit-icon rounded-circle bg-primary-subtle p-3 mx-auto mb-3">
               <i className="bi bi-headset fs-2 text-primary"></i>
             </div>
-            <h5>24/7 Support</h5>
-            <p className="text-muted">Dedicated support team</p>
+            <h5>Email Support</h5>
+            <p className="text-muted"><a className='text-decoration-none text-muted' href="mailto:Ekdastar@gmail.com">Ekdastar@gmail.com</a></p>
           </div>
         </div>
       </div>

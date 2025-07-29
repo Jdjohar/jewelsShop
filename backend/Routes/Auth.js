@@ -3,7 +3,14 @@ const User = require('../models/User')
 const Order = require('../models/Orders')
 const Products = require('../models/Product')
 const Category = require('../models/Category')
+const Brand = require('../models/Brands')
 const Checkout = require('../models/CheckOut')
+const mongoose = require('mongoose');
+const path = require('path');
+ const fs = require('fs');
+const csv = require('csv-parser');
+const stream = require('stream');
+const StripeResponse = require('../models/StripeResponse')
 require('dotenv').config();
 const router = express.Router()
 const { body, validationResult } = require('express-validator');
@@ -11,8 +18,9 @@ const bcrypt = require('bcryptjs')
 var jwt = require('jsonwebtoken');
 const axios = require('axios')
 const fetch = require('../middleware/fetchdetails');
-const jwtSecret = "HaHa"
+const jwtSecret = process.env.JWT_SECRET;
 const multer = require('multer');
+
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -30,6 +38,17 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+const auth = (req, res, next) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (!token) return next(); // Allow guest checkout
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+};
 
 
 // var foodItems= require('../index').foodData;
@@ -39,8 +58,8 @@ const upload = multer({ storage: storage });
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-      user: "jdwebservices1@gmail.com",
-      pass: "oznjagccfrqngoah"
+      user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
   },
 });
 
@@ -80,10 +99,10 @@ router.post('/createuser', [
         subject: 'Welcome to Our Store!',
         html: `
         <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-          <h1 style="color: #4CAF50;">Welcome to Jewels Shop, ${req.body.name}!</h1>
-          <p>Thank you for joining <strong> Jewels Shop</strong>, where tradition meets elegance. We're honored to be part of your journey in finding authentic turbans, patkas, and dumala sahibs.</p>
+          <h1 style="color: #4CAF50;">Welcome to Ek Dastar, ${req.body.name}!</h1>
+          <p>Thank you for joining <strong>Ek Dastar</strong>, where tradition meets elegance. We're honored to be part of your journey in finding authentic turbans, patkas, and dumala sahibs.</p>
       
-          <p>As a valued member of Jewels Shop, you now have access to:</p>
+          <p>As a valued member of Ek Dastar, you now have access to:</p>
           <ul>
             <li>Exclusive offers on premium turbans and accessories</li>
             <li>Personalized recommendations based on your unique style</li>
@@ -96,12 +115,12 @@ router.post('/createuser', [
           
           <p>If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:support@ekDastar.com" style="color: #4CAF50;">support@ekDastar.com</a>. Our team is here to ensure your shopping experience is as seamless as possible.</p>
       
-          <p>Welcome once again to the Jewels Shop family. We look forward to being a part of your journey.</p>
+          <p>Welcome once again to the Ek Dastar family. We look forward to being a part of your journey.</p>
       
-          <p>With respect and best wishes,<br>The Jewels Shop Team</p>
+          <p>With respect and best wishes,<br>The Ek Dastar Team</p>
       
           <hr style="border: none; border-top: 1px solid #ccc;">
-          <p style="font-size: 12px; color: #666;">You're receiving this email because you registered with Jewels Shop. If you didn’t sign up, please ignore this email or <a href="mailto:support@ekDastar.com" style="color: #666;">contact us</a>.</p>
+          <p style="font-size: 12px; color: #666;">You're receiving this email because you registered with Ek Dastar. If you didn’t sign up, please ignore this email or <a href="mailto:support@ekDastar.com" style="color: #666;">contact us</a>.</p>
         </div>
       `
       
@@ -127,6 +146,8 @@ router.post('/createuser', [
     res.status(500).send("Internal Server Error");
   }
 });
+
+
 
 
 //Get a Product
@@ -297,10 +318,10 @@ router.post('/getlocation', async (req, res) => {
 })
 router.post('/foodData', async (req, res) => {
   try {
-    // console.log( JSON.stringify(global.foodData))
-    // const userId = req.user.id;
-    // await database.listCollections({name:"food_items"}).find({});
-    res.send([global.foodData, global.foodCategory])
+   const foodItems = await Products.find({});
+        const foodCategories = await Category.find({});
+        res.send([foodItems, foodCategories]);
+    // res.send([global.foodData, global.foodCategory])
 
   } catch (error) {
     console.error(error.message)
@@ -347,106 +368,6 @@ router.post('/orderData', async (req, res) => {
   }
 })
 
-  router.post('/checkoutOrder', async (req, res) => {
-    try {
-      const {
-        billingAddress,
-        userId,
-        userEmail,
-        shippingAddress,
-        orderItems,
-        totalAmount,
-        shippingMethod,
-        shippingCost,
-        paymentMethod,
-        paymentStatus
-      } = req.body;
-
-      console.log(billingAddress,"billingAddress");
-      
-
-      // Validate request
-      if (!billingAddress || !shippingAddress || !orderItems || !totalAmount || !shippingMethod || !paymentMethod) {
-        return res.status(400).json({ msg: 'All required fields must be filled' });
-      }
-
-      // Create a new order
-      const newOrder = new Checkout({
-        userId,
-        userEmail,
-        billingAddress,
-        shippingAddress,
-        orderItems,
-        totalAmount,
-        paymentStatus,
-        shippingMethod,
-        shippingCost,
-        paymentMethod
-      });
-
-      // Save the order to the database
-      const order = await newOrder.save();
-
-      // Email to Customer: Order Confirmation
-      const customerMailOptions = {
-        from: 'jdwebserviecs1@gmail.com',
-        to: billingAddress.email, // Customer's email
-        subject: 'Your Order with Jewels Shop has been Placed Successfully!',
-        html: `
-          <h2>Thank you for your order, ${billingAddress.firstName}!</h2>
-          <p>Your order has been placed successfully and is now being processed.</p>
-          <h3>Order Details:</h3>
-          <p><strong>Order ID:</strong> ${order._id}</p>
-          <p><strong>Total Amount:</strong> $${(totalAmount / 100).toFixed(2)}</p>
-          <p><strong>Shipping Method:</strong> ${shippingMethod}</p>
-          <p><strong>Payment Method:</strong> ${paymentMethod}</p>
-          <p>We will notify you once your order is shipped. Thank you for shopping with Jewels Shop!</p>
-        `
-      };
-
-      // Email to Owner: New Order Notification
-      const ownerMailOptions = {
-        from: 'jdwebserviecs1@gmail.com',
-        to: 'jdeep514@gmail.com', // Owner's email address
-        subject: 'New Order Placed on Jewels Shop',
-        html: `
-          <h2>New Order Alert!</h2>
-          <p>A new order has been placed on Jewels Shop.</p>
-          <h3>Order Details:</h3>
-          <p><strong>Order ID:</strong> ${order._id}</p>
-          <p><strong>Customer Name:</strong> ${billingAddress.firstName}</p>
-          <p><strong>Customer Email:</strong> ${billingAddress.email}</p>
-          <p><strong>Total Amount:</strong> $${(totalAmount / 100).toFixed(2)}</p>
-          <p><strong>Shipping Method:</strong> ${shippingMethod}</p>
-          <p><strong>Payment Status:</strong> ${paymentStatus}</p>
-          <p>Please review the order in the admin panel for further details.</p>
-        `
-      };
-
-      // Send customer email
-      transporter.sendMail(customerMailOptions, (error, info) => {
-        if (error) {
-          console.error('Error sending email to customer:', error);
-        } else {
-          console.log('Customer email sent:', info.response);
-        }
-      });
-
-      // Send owner email
-      transporter.sendMail(ownerMailOptions, (error, info) => {
-        if (error) {
-          console.error('Error sending email to owner:', error);
-        } else {
-          console.log('Owner email sent:', info.response);
-        }
-      });
-
-      res.status(200).json(order);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ msg: 'Server Error' });
-    }
-  });
 
 // Get all orders
 router.get('/orders', async (req, res) => {
@@ -511,7 +432,7 @@ router.put('/orders/:id', async (req, res) => {
           <p><strong>Status:</strong> ${orderStatus}</p>
           ${estimatedDelivery ? `<p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>` : ''}
           ${trackingNumber ? `<p><strong>Tracking Number:</strong> ${trackingNumber}</p>` : ''}
-          <p>Thank you for shopping with Jewels Shop!</p>
+          <p>Thank you for shopping with Ek Dastar!</p>
         `
       };
 
@@ -600,162 +521,300 @@ router.get('/orders/status/:status', async (req, res) => {
     res.status(500).json({ msg: 'Server Error' });
   }
 });
+// Middleware to verify JWT (optional for guest checkout)
+
 
 router.post('/payment', async (req, res) => {
-  const { amount, description, userEmail, billingAddress, shippingAddress, customerId, paymentMethodId, orderId } = req.body;
-  console.log('Received billingAddress:', billingAddress);
-  console.log('Received shippingAddress:', shippingAddress);
-  console.log('Received customerId:', customerId);
-  console.log('Received paymentMethodId:', paymentMethodId);
+    const { amount, description, userId, uemail, billingAddress, shippingAddress, customerId, paymentMethodId, orderId } = req.body;
+    console.log(amount, description, userId, uemail, billingAddress, shippingAddress, customerId, paymentMethodId, orderId);
 
-  try {
-    // Validate required fields
-    if (!amount || !billingAddress || !customerId || !paymentMethodId) {
-      return res.status(400).json({ msg: 'Missing required fields: amount, billingAddress, customerId, or paymentMethodId' });
+    try {
+        // Validate required fields
+        if (!amount || !billingAddress || !customerId || !paymentMethodId) {
+            return res.status(400).json({ msg: 'Missing required fields: amount, billingAddress, customerId, or paymentMethodId' });
+        }
+
+        const email = uemail || billingAddress?.email || shippingAddress?.email;
+        if (!email) {
+            return res.status(400).json({ msg: 'Email is required' });
+        }
+
+        // Convert amount to integer cents
+        const amountInCents = Math.round(amount * 100);
+
+        let order = await Order.findById(orderId);
+        if (!order && orderId) {
+            return res.status(404).json({ msg: 'Order not found' });
+        } else if (!order) {
+            order = new Order({
+                userId: userId,
+                email: email,
+                billingAddress: billingAddress.address,
+                shippingAddress: shippingAddress.address,
+                amount: amount, // Keep original amount in dollars
+                currency: 'AUD',
+                status: 'pending',
+            });
+            await order.save();
+        }
+
+        await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId });
+
+        const customer = await stripe.customers.retrieve(customerId);
+        if (!customer.invoice_settings || !customer.invoice_settings.default_payment_method) {
+            await stripe.customers.update(customerId, {
+                invoice_settings: { default_payment_method: paymentMethodId },
+            });
+        }
+
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: amountInCents,
+            currency: 'AUD',
+            payment_method_types: ['card'],
+            payment_method: paymentMethodId,
+            description: description || 'Payment for order',
+            customer: customerId,
+            shipping: {
+                name: shippingAddress?.name || billingAddress?.name || 'Unknown',
+                address: {
+                    line1: shippingAddress?.address?.line1 || billingAddress?.address?.line1,
+                    line2: shippingAddress?.address?.line2 || billingAddress?.address?.line2 || '',
+                    city: shippingAddress?.address?.city || billingAddress?.address?.city,
+                    postal_code: shippingAddress?.address?.postal_code || billingAddress?.address?.postal_code,
+                    country: shippingAddress?.address?.country || billingAddress?.address?.country || 'AU',
+                    state: shippingAddress?.address?.state || billingAddress?.address?.state,
+                },
+                phone: shippingAddress?.phone || billingAddress?.phone,
+            },
+            receipt_email: email,
+            metadata: {
+                email: email,
+                customerId: customerId,
+                orderId: order._id.toString(),
+            },
+            setup_future_usage: 'off_session',
+        });
+
+        // Save Stripe response to database
+        const stripeResponse = new StripeResponse({
+            type: 'payment_intent',
+            eventType: 'payment_intent.created',
+            data: paymentIntent,
+            orderId: order._id,
+            userEmail: email,
+        });
+        await stripeResponse.save();
+
+        order.paymentIntentId = paymentIntent.id;
+        await order.save();
+
+        res.json({ clientSecret: paymentIntent.client_secret, orderId: order._id.toString() });
+    } catch (error) {
+        console.error('Payment processing failed:', error);
+        res.status(500).json({ msg: 'Payment processing failed', error: error.message });
     }
+});
 
-    // Validate email presence (since it's required in the Order model)
-    const email = userEmail || billingAddress?.email || shippingAddress?.email;
-    if (!email) {
-      return res.status(400).json({ msg: 'Email is required' });
-    }
+router.post('/checkoutOrder', async (req, res) => {
+    try {
+      const {
+        billingAddress,
+        userId,
+        orderId,
+        userEmail,
+        shippingAddress,
+        orderItems,
+        totalAmount,
+        shippingMethod,
+        shippingCost,
+        paymentMethod,
+        paymentStatus
+      } = req.body;
 
-    // Check if an order with the same email exists
-    let order = await Order.findOne({ email });
+      console.log(billingAddress,"billingAddress");
+      
 
-    if (orderId) {
-      order = await Order.findById(orderId);
-      if (!order) {
-        return res.status(404).json({ msg: 'Order not found' });
+      // Validate request
+      if (!billingAddress || !shippingAddress || !orderItems || !totalAmount || !shippingMethod || !paymentMethod) {
+        return res.status(400).json({ msg: 'All required fields must be filled' });
       }
-    } else if (!order) {
-      // Only create a new order if none exists
-      order = new Order({
-        userId: customerId,
-        email: email, // Ensure email is always set
-        billingAddress: billingAddress.address,
-        shippingAddress: shippingAddress.address,
-        amount: amount / 100,
-        currency: 'AUD',
-        status: 'pending',
-        paymentIntentId: null,
+
+  // 🔑 Generate ObjectId manually
+    const generatedId = orderId ? new mongoose.Types.ObjectId(orderId) : new mongoose.Types.ObjectId();
+
+
+     const newOrder = new Checkout({
+      _id: generatedId,
+      orderId: generatedId.toString(), // same as _id
+      userId,
+      userEmail,
+      billingAddress,
+      shippingAddress,
+      orderItems,
+      totalAmount,
+      paymentStatus,
+      shippingMethod,
+      shippingCost,
+      paymentMethod
+    });
+
+    const order = await newOrder.save();
+
+      // Email to Customer: Order Confirmation
+      const customerMailOptions = {
+        from: 'jdwebserviecs1@gmail.com',
+        to: billingAddress.email, // Customer's email
+        subject: 'Your Order with Ek Dastar has been Placed Successfully!',
+        html: `
+          <h2>Thank you for your order, ${billingAddress.firstName}!</h2>
+          <p>Your order has been placed successfully and is now being processed.</p>
+          <h3>Order Details:</h3>
+          <p><strong>Order ID:</strong> ${order._id}</p>
+          <p><strong>Total Amount:</strong> $${(totalAmount / 100).toFixed(2)}</p>
+          <p><strong>Shipping Method:</strong> ${shippingMethod}</p>
+          <p><strong>Payment Method:</strong> ${paymentMethod}</p>
+          <p>We will notify you once your order is shipped. Thank you for shopping with Ek Dastar!</p>
+        `
+      };
+
+      // Email to Owner: New Order Notification
+      const ownerMailOptions = {
+        from: 'jdwebserviecs1@gmail.com',
+        to: 'jdeep514@gmail.com', // Owner's email address
+        subject: 'New Order Placed on Ek Dastar',
+        html: `
+          <h2>New Order Alert!</h2>
+          <p>A new order has been placed on Ek Dastar.</p>
+          <h3>Order Details:</h3>
+          <p><strong>Order ID:</strong> ${order._id}</p>
+          <p><strong>Customer Name:</strong> ${billingAddress.firstName}</p>
+          <p><strong>Customer Email:</strong> ${billingAddress.email}</p>
+          <p><strong>Total Amount:</strong> $${(totalAmount / 100).toFixed(2)}</p>
+          <p><strong>Shipping Method:</strong> ${shippingMethod}</p>
+          <p><strong>Payment Status:</strong> ${paymentStatus}</p>
+          <p>Please review the order in the admin panel for further details.</p>
+        `
+      };
+
+      // Send customer email
+      transporter.sendMail(customerMailOptions, (error, info) => {
+        if (error) {
+          console.error('Error sending email to customer:', error);
+        } else {
+          console.log('Customer email sent:', info.response);
+        }
       });
-      console.log('Creating new order:', order);
-      await order.save();
+
+      // Send owner email
+      transporter.sendMail(ownerMailOptions, (error, info) => {
+        if (error) {
+          console.error('Error sending email to owner:', error);
+        } else {
+          console.log('Owner email sent:', info.response);
+        }
+      });
+
+      res.status(200).json(order);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ msg: 'Server Error' });
+    }
+});
+// Create or retrieve Stripe customer
+router.post('/create-customer', auth, async (req, res) => {
+  try {
+    const { name, email, phone, address } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    let customer;
+    if (req.user) {
+      // Authenticated user
+      const user = await User.findById(req.user.id);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+      // Check if customer exists
+      const existing = await stripe.customers.list({ email: user.email, limit: 1 });
+      if (existing.data.length > 0) {
+        customer = existing.data[0];
+      } else {
+        customer = await stripe.customers.create({
+          email: user.email,
+          name,
+          phone,
+          address,
+          metadata: { userId: user._id.toString() },
+        });
+        // Update user with customer ID
+        user.stripeCustomerId = customer.id;
+        await user.save();
+      }
     } else {
-      console.log('Order already exists with email:', email);
+      // Guest user
+      const existing = await stripe.customers.list({ email, limit: 1 });
+      if (existing.data.length > 0) {
+        customer = existing.data[0];
+      } else {
+        customer = await stripe.customers.create({ email, name, phone, address });
+      }
     }
-
-    // Attach the payment method to the customer
-    await stripe.paymentMethods.attach(paymentMethodId, {
-      customer: customerId,
-    });
-
-    // Ensure default payment method is set for the customer
-    const customer = await stripe.customers.retrieve(customerId);
-    if (!customer.invoice_settings || !customer.invoice_settings.default_payment_method) {
-      await stripe.customers.update(customerId, {
-        invoice_settings: { default_payment_method: paymentMethodId },
-      });
-    }
-
-    // Create the PaymentIntent with the payment method
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount,
-      currency: 'AUD',
-      payment_method_types: ['card'],
-      payment_method: paymentMethodId,
-      description: description || 'Payment for order',
-      customer: customerId,
-      shipping: {
-        name: shippingAddress?.name || billingAddress?.name || 'Unknown',
-        address: {
-          line1: shippingAddress?.address?.line1 || billingAddress?.address?.line1,
-          line2: shippingAddress?.address?.line2 || billingAddress?.address?.line2 || '',
-          city: shippingAddress?.address?.city || billingAddress?.address?.city,
-          postal_code: shippingAddress?.address?.postal_code || billingAddress?.address?.postal_code,
-          country: shippingAddress?.address?.country || billingAddress?.address?.country || 'AU',
-          state: shippingAddress?.address?.state || billingAddress?.address?.state,
-        },
-        phone: shippingAddress?.phone || billingAddress?.phone,
-      },
-      receipt_email: email,
-      metadata: {
-        email: email,
-        customerId: customerId,
-        orderId: order._id.toString(),
-      },
-      setup_future_usage: 'off_session', // Save payment method for future use
-    });
-
-    // Update the order with the PaymentIntent ID
-    order.paymentIntentId = paymentIntent.id;
-    await order.save();
-
-    console.log('PaymentIntent created:', paymentIntent);
-
-    res.json({ clientSecret: paymentIntent.client_secret, orderId: order._id.toString() });
+    res.json({ customerId: customer.id });
   } catch (error) {
-    console.error('Payment processing failed:', error);
-    res.status(500).json({ msg: 'Payment processing failed', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Failed to create customer' });
   }
 });
 
-router.post('/create-customer', async (req, res) => {
-  const { name, email, phone, address } = req.body;
-  const customer = await stripe.customers.create({
-      name,
-      email,
-      phone,
-      address,
-  });
-  res.json({ customerId: customer.id });
-});
+
+
+
 
 // Create PaymentIntent endpoint
 router.post('/create-intent', async (req, res) => {
-  try {
-    // Destructure the data received from the frontend
-    const { amount, currency, billing_details, shipping, description, customerId } = req.body;
+    try {
+        const { amount, currency, billing_details, shipping, description, customerId } = req.body;
 
-    // Validate required fields
-    if (!amount || !currency || !billing_details) {
-      return res.status(400).json({ msg: 'Missing required fields: amount, currency, or billing_details' });
+        if (!amount || !currency || !billing_details) {
+            return res.status(400).json({ msg: 'Missing required fields: amount, currency, or billing_details' });
+        }
+
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount,
+            currency: currency || 'AUD',
+            payment_method_types: ['card'],
+            receipt_email: billing_details.email,
+            description: description || 'Payment for order',
+            customer: customerId,
+            shipping: shipping ? {
+                name: shipping.name || `${billing_details.firstName} ${billing_details.lastName || ''}`,
+                address: {
+                    line1: shipping.address?.line1 || billing_details.address?.line1,
+                    city: shipping.address?.city || billing_details.address?.city,
+                    postal_code: shipping.address?.postal_code || billing_details.address?.postal_code,
+                    country: shipping.address?.country || billing_details.address?.country || 'AU',
+                    state: shipping.address?.state || billing_details.address?.state,
+                },
+                phone: shipping.phone || billing_details.phone,
+            } : null,
+            metadata: {
+                email: billing_details.email,
+                customerId: customerId || 'N/A',
+            },
+        });
+
+        // Save Stripe response to database
+        const stripeResponse = new StripeResponse({
+            type: 'payment_intent',
+            eventType: 'payment_intent.created',
+            data: paymentIntent,
+            stripeCustomerId: customerId,
+            userEmail: billing_details.email,
+        });
+        await stripeResponse.save();
+
+        res.status(200).json({ clientSecret: paymentIntent.client_secret });
+    } catch (error) {
+        console.error('Error creating PaymentIntent:', error);
+        res.status(500).json({ error: error.message });
     }
-
-    // Create a PaymentIntent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount, // Use the amount from the request
-      currency: currency || 'AUD', // Default to AUD if not provided
-      payment_method_types: ['card'],
-      receipt_email: billing_details.email, // Use the email from billing_details
-      description: description || 'Payment for order', // Use the description from the request
-      customer: customerId, // Associate with a customer if provided
-      shipping: shipping ? {
-        name: shipping.name || `${billing_details.firstName} ${billing_details.lastName || ''}`,
-        address: {
-          line1: shipping.address?.line1 || billing_details.address?.line1,
-          city: shipping.address?.city || billing_details.address?.city,
-          postal_code: shipping.address?.postal_code || billing_details.address?.postal_code,
-          country: shipping.address?.country || billing_details.address?.country || 'AU',
-          state: shipping.address?.state || billing_details.address?.state,
-        },
-        phone: shipping.phone || billing_details.phone,
-      } : null,
-      metadata: {
-        email: billing_details.email,
-        customerId: customerId || 'N/A',
-      },
-    });
-
-    console.log('PaymentIntent created:', paymentIntent);
-
-    // Send the client secret back to the client
-    res.status(200).json({ clientSecret: paymentIntent.client_secret });
-  } catch (error) {
-    console.error('Error creating PaymentIntent:', error);
-    res.status(500).json({ error: error.message });
-  }
 });
 router.put('/:id/paymentStatus', async (req, res) => {
   const { paymentStatus } = req.body;
@@ -811,73 +870,264 @@ router.get('/products/:productId', async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
+// ✅ Add a brand
+router.post('/addbrand', upload.single('img'), async (req, res) => {
+  try {
+    const { name } = req.body;
+    let imgUrl = '';
 
+    if (req.file) {
+      const uploaded = await cloudinary.uploader.upload(req.file.path, {
+        upload_preset: 'employeeApp',
+      });
+      imgUrl = uploaded.secure_url;
+    }
+
+    const newBrand = new Brand({ name, img: imgUrl });
+    const savedBrand = await newBrand.save();
+
+    res.status(201).json({ status: 'success', data: savedBrand });
+  } catch (err) {
+    console.error('Error adding brand:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// 📄 Get all brands
+router.get('/brands', async (req, res) => {
+  try {
+    const brands = await Brand.find().sort({ name: 1 });
+    res.status(200).json({ status: 'success', data: brands });
+  } catch (err) {
+    console.error('Error fetching brands:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+// 📄 Get a single brand by ID
+router.get('/brand/:id', async (req, res) => {
+  try {
+    const brand = await Brand.findById(req.params.id);
+    if (!brand) {
+      return res.status(404).json({ status: 'error', message: 'Brand not found' });
+    }
+
+    res.status(200).json({ status: 'success', data: brand });
+  } catch (error) {
+    console.error('Error fetching brand:', error);
+    res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+  }
+});
+
+
+// ✏️ Update a brand
+router.put('/brand/:id', upload.single('img'), async (req, res) => {
+  try {
+    const { name } = req.body;
+    const updates = {};
+
+    if (name) updates.name = name;
+    if (req.file) {
+      const uploaded = await cloudinary.uploader.upload(req.file.path, {
+        upload_preset: 'employeeApp',
+      });
+      updates.img = uploaded.secure_url;
+    }
+
+    const updatedBrand = await Brand.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+    });
+
+    if (!updatedBrand) {
+      return res.status(404).json({ error: 'Brand not found' });
+    }
+
+    res.status(200).json({ status: 'success', data: updatedBrand });
+  } catch (err) {
+    console.error('Error updating brand:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// ❌ Delete a brand
+router.delete('/brand/:id', async (req, res) => {
+  try {
+    const deleted = await Brand.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Brand not found' });
+    }
+    res.status(200).json({ status: 'success', message: 'Brand deleted' });
+  } catch (err) {
+    console.error('Error deleting brand:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 // Define a route to handle product creation with Cloudinary image upload
 router.post('/addproducts', upload.single('img'), async (req, res) => {
+  const validCollections = ['Men', 'Women', 'Unisex'];
+const cleanCollection = validCollections.includes(collection) ? collection : undefined;
   try {
-    const { name, description, CategoryName, options, featured, quantity } = req.body;
+    const {
+      name,
+      description,
+      CategoryName,
+      brandName,
+      collection, // Men, Women, Unisex
+      options,
+      featured,
+      quantity
+    } = req.body;
+
+    // Upload product image to Cloudinary
     const uploadedImg = await cloudinary.uploader.upload(req.file.path, {
       upload_preset: 'employeeApp',
     });
 
+    // Find category by name
+    const category = await Category.findOne({ CategoryName });
+    if (!category) {
+      return res.status(400).json({ error: 'Category not found' });
+    }
+
+    // Optional: Find or create brand
+    let brand = null;
+    if (brandName) {
+      brand = await Brand.findOne({ name: brandName });
+      if (!brand) {
+        brand = await new Brand({ name: brandName }).save(); // Create if not found
+      }
+    }
+
+    // Create new product
     const newProduct = new Products({
       name,
       description,
-      CategoryName,
+      category: category._id,
+      brand: brand ? brand._id : undefined,
+      collection,
       img: uploadedImg.secure_url,
-      options: JSON.parse(options),
-      featured,
+      featured: featured === 'true' || featured === true,
+      options: options ? JSON.parse(options) : [],
       inventory: {
-        quantity: quantity || 0, // Default to 0 if not provided
+        quantity: quantity || 0,
       },
     });
 
     const savedProduct = await newProduct.save();
-    global.foodData.push(savedProduct); // Update global foodData if still needed
+    global.foodData.push(savedProduct); // Optional: update global cache
+
     res.status(201).json({
       status: 'success',
       data: savedProduct,
     });
   } catch (error) {
-    console.error('Error uploading to Cloudinary:', error);
+    console.error('Error in /addproducts:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// POST route to import products from CSV
+router.post('/import-csv', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+    const filePath = path.resolve(req.file.path);
+
+    console.log('Uploaded file path:', filePath);
+
+    const results = [];
+    const inserted = [];
+
+    // Create read stream from uploaded file on disk
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (row) => {
+        console.log('Parsed row:', row); // Debug each row
+        results.push(row);
+      })
+      .on('error', (err) => {
+        console.error('CSV parsing error:', err);
+      })
+      .on('end', async () => {
+        console.log(`Total rows parsed: ${results.length}`);
+
+        for (const row of results) {
+          try {
+            const {
+              name,
+              description,
+              CategoryName,
+              img,
+              featured,
+              quantity,
+              options,
+            } = row;
+
+            const newProduct = new Products({
+              name,
+              description,
+              CategoryName,
+              img,
+              featured: featured === 'true',
+              inventory: { quantity: Number(quantity) || 0 },
+              options: options ? JSON.parse(options) : {},
+            });
+
+            const savedProduct = await newProduct.save();
+            inserted.push(savedProduct);
+          } catch (err) {
+            console.error('Error saving product:', err.message);
+          }
+        }
+
+        res.status(201).json({
+          message: 'CSV import complete',
+          count: inserted.length,
+          data: inserted,
+        });
+      });
+  } catch (err) {
+    console.error('CSV import error:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
 router.get('/product', async (req, res) => {
-  try {
-    const { lowStock } = req.query; // Optional query param to filter low stock
-    let query = {};
+    try {
+        const { lowStock } = req.query;
+        let query = {};
 
-    if (lowStock === 'true') {
-      query['inventory.quantity'] = { $lte: Products.schema.path('inventory.lowStockThreshold').defaultValue };
+        if (lowStock === 'true') {
+            query['inventory.quantity'] = { $lte: Products.schema.path('inventory.lowStockThreshold').defaultValue };
+        }
+
+        const products = await Products.find(query);
+        res.set('Cache-Control', 'no-store'); // Prevent caching
+        res.status(200).json({
+            status: 'success',
+            data: products,
+        });
+    } catch (error) {
+        console.error('Error fetching products:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-
-    const products = await Products.find(query);
-    res.status(200).json({
-      status: 'success',
-      data: products,
-    });
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
 });
 
 router.get('/product/:id', async (req, res) => {
-  try {
-    const product = await Products.findById(req.params.id); // Find product by ID
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+    try {
+        const product = await Products.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.set('Cache-Control', 'no-store'); // Prevent caching
+        res.status(200).json({
+            status: 'success',
+            data: product,
+        });
+    } catch (error) {
+        console.error('Error fetching product:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-    res.status(200).json({
-      status: 'success',
-      data: product,
-    });
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
 });
 
 router.put('/product/:id', upload.single('img'), async (req, res) => {
@@ -909,7 +1159,10 @@ router.put('/product/:id', upload.single('img'), async (req, res) => {
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
-
+// Update global.foodData
+        global.foodData = global.foodData.map(item =>
+            item._id.toString() === req.params.id ? product : item
+        );
     res.status(200).json({
       status: 'success',
       data: product,
@@ -1163,8 +1416,8 @@ router.post('/forgot-password', async (req, res) => {
       service: "Gmail",
       secure: false,
       auth: {
-        user: "jdwebservices1@gmail.com",
-        pass: "cwoxnbrrxvsjfbmr"
+       user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
       tls: {
         rejectUnauthorized: false
@@ -1175,7 +1428,7 @@ router.post('/forgot-password', async (req, res) => {
       from: 'jdwebservices1@gmail.com',
       to: email,
       subject: 'Password Reset',
-      text: `Click the following link to reset your password: https://jewelsshop.onrender.com/reset-password/${resetToken}`,
+      text: `Click the following link to reset your password: https://ekdastarstore.onrender.com/reset-password/${resetToken}`,
     };
 
     await transporter.sendMail(mailOptions);
@@ -1248,84 +1501,93 @@ router.post('/reset-password/:resetToken', async (req, res) => {
 
 // POST /api/create-checkout-session
 router.post('/create-checkout-session', async (req, res) => {
-  try {
-    const { lineItems, successUrl, cancelUrl, customerId, userEmail, orderId } = req.body;
+    try {
+        const { lineItems, successUrl, cancelUrl, customerId, userEmail, orderId } = req.body;
 
-    // Validate required fields
-    if (!lineItems || !successUrl || !cancelUrl) {
-      return res.status(400).json({ msg: 'Missing required fields: lineItems, successUrl, or cancelUrl' });
+        if (!lineItems || !successUrl || !cancelUrl) {
+            return res.status(400).json({ msg: 'Missing required fields: lineItems, successUrl, or cancelUrl' });
+        }
+
+        if (!Array.isArray(lineItems) || lineItems.length === 0) {
+            return res.status(400).json({ msg: 'lineItems must be a non-empty array' });
+        }
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: lineItems,
+            mode: 'payment',
+            success_url: successUrl,
+            cancel_url: cancelUrl,
+            customer: customerId || undefined,
+            metadata: {
+                userEmail: userEmail || 'N/A',
+                orderId: orderId || 'N/A',
+            },
+        });
+
+        // Save Stripe response to database
+        const stripeResponse = new StripeResponse({
+            type: 'checkout_session',
+            eventType: 'checkout.session.created',
+            data: session,
+            orderId: orderId,
+            userId: customerId,
+            userEmail: userEmail,
+        });
+        await stripeResponse.save();
+
+        res.json({ sessionId: session.id });
+    } catch (error) {
+        console.error('Error creating Checkout Session:', error);
+        res.status(500).json({ error: 'Failed to create checkout session', details: error.message });
     }
-
-    // Validate lineItems format
-    if (!Array.isArray(lineItems) || lineItems.length === 0) {
-      return res.status(400).json({ msg: 'lineItems must be a non-empty array' });
-    }
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: lineItems,
-      mode: 'payment',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      customer: customerId || undefined, // Associate with a customer if provided
-      metadata: {
-        userEmail: userEmail || 'N/A',
-        orderId: orderId || 'N/A',
-      },
-    });
-
-    res.json({ sessionId: session.id });
-  } catch (error) {
-    console.error('Error creating Checkout Session:', error);
-    res.status(500).json({ error: 'Failed to create checkout session', details: error.message });
-  }
 });
 
 // POST /api/stripe-webhook
-router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
+// router.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+//   const sig = req.headers['stripe-signature'];
 
-  let event;
+//   let event;
 
-  try {
-    // Use the raw body and your webhook secret from environment variables
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    console.error('Webhook Error:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
+//   try {
+//     // Use the raw body and your webhook secret from environment variables
+//     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+//   } catch (err) {
+//     console.error('Webhook Error:', err.message);
+//     return res.status(400).send(`Webhook Error: ${err.message}`);
+//   }
 
-  // Handle the event
-  switch (event.type) {
-    case 'checkout.session.completed':
-      const session = event.data.object;
-      console.log('Checkout Session completed:', session);
-      // TODO: Update your database (e.g., mark order as paid)
-      // Example: Update order status in your database
-      // await Order.findByIdAndUpdate(session.metadata.orderId, { status: 'paid' });
-      break;
+//   // Handle the event
+//   switch (event.type) {
+//     case 'checkout.session.completed':
+//       const session = event.data.object;
+//       console.log('Checkout Session completed:', session);
+//       // TODO: Update your database (e.g., mark order as paid)
+//       // Example: Update order status in your database
+//       // await Order.findByIdAndUpdate(session.metadata.orderId, { status: 'paid' });
+//       break;
 
-    case 'payment_intent.succeeded':
-      const paymentIntent = event.data.object;
-      console.log('PaymentIntent succeeded:', paymentIntent);
-      // TODO: Update your database (e.g., mark order as paid)
-      // Example: Update order status in your database
-      // await Order.findByIdAndUpdate(paymentIntent.metadata.orderId, { status: 'paid' });
-      break;
+//     case 'payment_intent.succeeded':
+//       const paymentIntent = event.data.object;
+//       console.log('PaymentIntent succeeded:', paymentIntent);
+//       // TODO: Update your database (e.g., mark order as paid)
+//       // Example: Update order status in your database
+//       // await Order.findByIdAndUpdate(paymentIntent.metadata.orderId, { status: 'paid' });
+//       break;
 
-    case 'payment_intent.payment_failed':
-      const paymentIntentFailed = event.data.object;
-      console.log('PaymentIntent failed:', paymentIntentFailed);
-      // TODO: Handle failed payment (e.g., notify user, update order status)
-      break;
+//     case 'payment_intent.payment_failed':
+//       const paymentIntentFailed = event.data.object;
+//       console.log('PaymentIntent failed:', paymentIntentFailed);
+//       // TODO: Handle failed payment (e.g., notify user, update order status)
+//       break;
 
-    default:
-      console.log(`Unhandled event type ${event.type}`);
-  }
+//     default:
+//       console.log(`Unhandled event type ${event.type}`);
+//   }
 
-  // Return a response to acknowledge receipt of the event
-  res.json({ received: true });
-});
+//   // Return a response to acknowledge receipt of the event
+//   res.json({ received: true });
+// });
 
 // Dashbaord api's
 // 1. Total Products

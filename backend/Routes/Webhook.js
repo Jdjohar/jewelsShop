@@ -1,59 +1,84 @@
 const express = require('express');
 const router = express.Router();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY2); // Replace with your Stripe Secret Key
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const StripeResponse = require('../models/StripeResponse');
+const Checkout = require('../models/CheckOut');
+const User = require('../models/User'); 
 
-// const endpointSecret = 'whsec_74ad17a41718e5668da72735dc5f3e490fcc21a6d24c17ec762cc78137579a92'; // Replace with your Webhook Secret
-const endpointSecret = process.env.END_POINT_SECRET; // Replace with your Webhook Secret
+router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
 
+    let event;
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+        console.log('✅ Event verified:', event);
+    } catch (err) {
+        console.error('❌ Webhook signature verification failed:', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
 
+    // Find user by Stripe customer ID (try metadata.customerId or data.object.customer)
+    let user = null;
+    try {
+        // Usually Stripe customer ID is in event.data.object.customer
+        const stripeCustomerId = event.data.object.customer || event.data.object.metadata?.customerId;
+        if (stripeCustomerId) {
+            user = await User.findOne({ stripeCustomerId: stripeCustomerId });
+        }
+    } catch (err) {
+        console.error('Error finding user by Stripe customerId:', err);
+    }
 
-// Webhook route that needs the raw body to verify the signature
-router.post('/webhook', express.raw({ type: 'application/json' }), (req, res) => {
-  const sig = req.headers['stripe-signature'];
+    // Save the webhook event to the database with correct userId (ObjectId) if found
+    const stripeResponse = new StripeResponse({
+        type: 'webhook_event',
+        eventType: event.type,
+        data: event.data.object,
+        orderId: event.data.object.metadata?.orderId,
+        userId: user ? user._id : null,  // use ObjectId or null if user not found
+        userEmail: event.data.object.metadata?.email || event.data.object.receipt_email,
+    });
 
-  console.log("Start dfgdghdgdfg", req.body);
-  console.log("Start endpointSecret", endpointSecret);
+    await stripeResponse.save();
+    console.log("stripeResponse.orderId",stripeResponse.orderId);
+    
 
-  // Check the type of req.body
-  if (Buffer.isBuffer(req.body)) {
-    console.log('req.body is a Buffer');
-    console.log('Raw Body String:', req.body.toString('utf-8')); // Convert Buffer to string for logging
-  } else if (typeof req.body === 'string') {
-    console.log('req.body is a string');
-  } else if (typeof req.body === 'object') {
-    console.log('req.body is a parsed JavaScript object');
-  } else {
-    console.log('req.body is of some other type');
-  }
+    // Handle the event
+    switch (event.type) {
+        case 'payment_intent.succeeded':
+            const paymentIntent = event.data.object;
+            console.log('💰 PaymentIntent was successful:', paymentIntent);
+            if (paymentIntent.metadata.orderId) {
+                await Checkout.findByIdAndUpdate(paymentIntent.metadata.orderId, {
+                    paymentStatus: 'paid',
+                    orderStatus: 'Processing',
+                });
+            }
+            break;
+        case 'payment_intent.payment_failed':
+            const failedPaymentIntent = event.data.object;
+            console.log('❌ PaymentIntent failed:', failedPaymentIntent);
+            if (failedPaymentIntent.metadata.orderId) {
+                await Checkout.findByIdAndUpdate(failedPaymentIntent.metadata.orderId, {
+                    paymentStatus: 'failed',
+                });
+            }
+            break;
+        case 'checkout.session.completed':
+            const session = event.data.object;
+            console.log('Checkout Session completed:', session);
+            if (session.metadata.orderId) {
+                await Checkout.findByIdAndUpdate(session.metadata.orderId, {
+                    paymentStatus: 'paid',
+                    orderStatus: 'Processing',
+                });
+            }
+            break;
+        default:
+            console.log(`Unhandled event type: ${event.type}`);
+    }
 
-  let event;
-  try {
-    // Verify the event by reconstructing it with the raw body and the signature
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-    console.log('✅ Event verified:', event);
-  } catch (err) {
-    console.error('❌ Webhook signature verification failed:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  // Handle the event based on the type
-  switch (event.type) {
-    case 'payment_intent.succeeded':
-      const paymentIntent = event.data.object;
-      console.log('💰 PaymentIntent was successful:', paymentIntent);
-      // Handle the payment success (e.g., update order in the database)
-      break;
-    case 'payment_intent.payment_failed':
-      const failedPaymentIntent = event.data.object;
-      console.log('❌ PaymentIntent failed:', failedPaymentIntent);
-      // Handle the payment failure
-      break;
-    default:
-      console.log(`Unhandled event type: ${event.type}`);
-  }
-
-  // Return a 200 response to acknowledge receipt of the event
-  res.status(200).json({ received: true });
+    res.status(200).json({ received: true });
 });
 
 module.exports = router;

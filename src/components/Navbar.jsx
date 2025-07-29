@@ -7,6 +7,7 @@ import { useCart } from './ContextReducer';
 import Modal from '../Modal';
 import Cart from '../screens/Cart';
 import logo from '../../public/logo.png';
+import NotificationBar from './NotificationBar';
 
 export default function Navbar(props) {
   const [cartView, setCartView] = useState(false);
@@ -37,11 +38,14 @@ export default function Navbar(props) {
   };
 
   return (
+    <>
+   
     <div className='home'>
+       <NotificationBar />
       <nav className="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
         <div className="container">
           <Link className="navbar-brand fw-bold" to="/">
-Jewels Store
+            <img src={logo} style={{ width: '35px', height: 'auto' }} alt="Store name" /> Store name
           </Link>
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
@@ -62,7 +66,7 @@ Jewels Store
                 </li>
               )}
               <li className="nav-item">
-                <a className="nav-link" href="#contact">Contact</a>
+                <a className="nav-link" href="/contact">Contact</a>
               </li>
             </ul>
             <form className="d-flex me-3" onSubmit={handleSearch}>
@@ -103,5 +107,6 @@ Jewels Store
       </nav>
       {cartView && <Modal onClose={() => setCartView(false)}><Cart /></Modal>}
     </div>
+    </>
   );
 }

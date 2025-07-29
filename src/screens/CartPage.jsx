@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCart, useDispatchCart } from '../components/ContextReducer';
-import Navbar2 from '../components/Navbar2';
+import Navbar2 from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -37,7 +37,7 @@ const CartPage = () => {
 
     return (
         <>
-            <Navbar2 />
+            <Navbar />
             <section className="page-header py-5 bg-primary text-white mt-5">
                 <div className="container">
                     <h1 className="display-4 text-white fw-bold">Shopping Cart</h1>
@@ -107,8 +107,8 @@ const CartPage = () => {
                                     <div className="row">
                                         <div className="col-md-6 mb-3 mb-md-0">
                                             <div className="input-group">
-                                                <input type="text" className="form-control" placeholder="Promo code" />
-                                                <button className="btn btn-outline-primary" type="button">Apply</button>
+                                                {/* <input type="text" className="form-control" placeholder="Promo code" />
+                                                <button className="btn btn-outline-primary" type="button">Apply</button> */}
                                             </div>
                                         </div>
                                         <div className="col-md-6 text-md-end">
@@ -192,10 +192,10 @@ const CartPage = () => {
                                     <h5 className="mb-0">We Accept</h5>
                                 </div>
                                 <div className="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                    <i className="bi bi-credit-card fs-2 text-primary"></i>
-                                    <i className="bi bi-paypal fs-2 text-primary"></i>
+                                    Credit/Debit Cards<i className="bi bi-credit-card fs-2 text-primary"></i>
+                                    {/* <i className="bi bi-paypal fs-2 text-primary"></i>
                                     <i className="bi bi-apple fs-2 text-primary"></i>
-                                    <i className="bi bi-google fs-2 text-primary"></i>
+                                    <i className="bi bi-google fs-2 text-primary"></i> */}
                                 </div>
                             </div>
                         </div>

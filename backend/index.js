@@ -9,14 +9,16 @@ const app = express();
 const port = 5000;
 const path = require('path');
 const router = express.Router();
-
+const { job } = require('./cron');
+job.start(); 
 // Middleware for serving static files
 app.use(express.static(path.join(__dirname, 'uploads')));
 
 // CORS setup
 app.use((req, res, next) => {
   const corsWhitelist = [
-    "https://jewels-shop-ten.vercel.app",
+    "https://ek-dastar-store.vercel.app",
+    "https://www.ekdastar.com.au",
     "http://localhost:5173",
   ];
   if (corsWhitelist.indexOf(req.headers.origin) !== -1) {
@@ -26,6 +28,7 @@ app.use((req, res, next) => {
   }
   next();
 });
+
 app.use('/', require('./Routes/Webhook'));
 // Apply express.json() for all other routes EXCEPT the webhook
 app.use(express.json());

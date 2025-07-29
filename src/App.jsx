@@ -19,6 +19,7 @@ import Dashboard  from './admin/Dashboard.jsx';
 import AddProduct  from './admin/AddProducts.jsx';
 import ProductList  from './admin/ProductList.jsx';
 import AddCategory  from './admin/AddCategory.jsx';
+import AddBrand  from './admin/AddBrands.jsx';
 import ForgotPassword from './screens/ForgotPassword.jsx';
 import ResetPassword from './screens/ResetPassword.jsx';
 import CheckoutForm from './screens/CheckoutForm.jsx';
@@ -36,16 +37,32 @@ import ProductCatwise from './screens/ProductCatwise.jsx';
 import About from './screens/About.jsx';
 import Categories from './screens/Categories.jsx';
 import SearchResults from './screens/SearchResults.jsx';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Contact from './screens/Contact.jsx';
+import BrandList from './admin/BrandList.jsx';
+import BrandEdit from './admin/BrandEdit.jsx';
 
 function App() {
   return (
     <CartProvider>
       <Router>
         <div>
+           <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
           <Routes>
             <Route exact path="/" element={<Home />} />
             <Route exact path="/about" element={<About />} />
-            <Route exact path="/categoies" element={<Categories />} />
+            <Route exact path="/categories" element={<Categories />} />
             <Route exact path="/login" element={<Login />} />
             <Route exact path="/signup" element={<Signup />} />
             <Route exact path="/myorder" element={<MyOrder />} />
@@ -56,17 +73,21 @@ function App() {
             <Route exact path="/cartpage" element={<CartPage />} />
             <Route exact path="/thankyou" element={<ThankYou />} />
             <Route exact path="/search" element={<SearchResults />} />
+            <Route exact path="/contact" element={<Contact />} />
             
             <Route exact path="/reset-password/:resetToken" element={<ResetPassword />} />
           
-            <Route exact path="/viewproduct/:productId" element={<ViewProduct />} />
+            <Route exact path="/product/:slug" element={<ViewProduct />} />
             <Route exact path="/admin/dashboard" element={<Dashboard />} />
             <Route exact path="/admin/addproducts" element={<AddProduct />} />
             <Route exact path="/admin/productlist" element={<ProductList />} />
             <Route exact path="/admin/editProduct/:id" element={<EditProduct />} />
             <Route exact path="/admin/addcategory" element={<AddCategory />} />
+            <Route exact path="/admin/addbrand" element={<AddBrand />} />
             <Route exact path="/admin/categoryList" element={<CategoryList />} />
+            <Route exact path="/admin/brandList" element={<BrandList />} />
             <Route exact path="/admin/categoryEdit/:id" element={<CategoryEdit />} />
+            <Route exact path="/admin/brandEdit/:id" element={<BrandEdit />} />
 
             <Route exact path="/admin/orderList" element={<OrdersList />} />
             <Route exact path="/admin/orderView/:id" element={<OrderView />} />

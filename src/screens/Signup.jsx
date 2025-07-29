@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import Navbar2 from '../components/Navbar2';
+import Navbar2 from '../components/Navbar';
 
 export default function Signup() {
   const [credentials, setCredentials] = useState({ name: "", email: "", password: "", role: "user" });
@@ -61,7 +61,7 @@ export default function Signup() {
 
   return (
     <div>
-      <Navbar2 />
+      <Navbar />
 
       <div className="container py-5">
         <div className="row py-5 g-0 h-100">

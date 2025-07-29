@@ -12,6 +12,10 @@ const OrderSchema = new Schema({
         type: Array,
         required: true,
     },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 
 });
 

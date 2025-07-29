@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa'; // For show/hide password icons
-import Navbar2 from '../components/Navbar2';
+import Navbar from '../components/Navbar';
 
 export default function Login() {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
@@ -70,7 +70,7 @@ export default function Login() {
 
   return (
     <div>
-      <Navbar2 />
+      <Navbar />
 
       <div className="container py-5">
         <div className="row py-5 g-0 h-100">

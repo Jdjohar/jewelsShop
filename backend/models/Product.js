@@ -2,9 +2,9 @@ const mongoose = require('mongoose')
 const { Schema } = mongoose;
 
 const productSchema = new Schema({
-    name:{
-        type:String,
-        required:true
+    name: {
+        type: String,
+        required: true
     },
     description: {
         type: String,
@@ -18,6 +18,17 @@ const productSchema = new Schema({
         type: String,
         required: true,
     },
+    brand: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Brand',
+        required: false, // Some products may be generic
+    },
+   pcollection: {
+    type: String,
+    enum: ['Men', 'Women', 'Unisex'],
+    required: false,
+    default: undefined,
+},
     featured: {
         type: Boolean,
         required: false,
@@ -26,16 +37,16 @@ const productSchema = new Schema({
     options: [],
     inventory: {
         quantity: {
-          type: Number,
-          required: true,
-          default: 0, // Default stock quantity
+            type: Number,
+            required: true,
+            default: 0, // Default stock quantity
         },
         lowStockThreshold: {
-          type: Number,
-          required: false,
-          default: 5, // Optional: Trigger low stock warning
+            type: Number,
+            required: false,
+            default: 5, // Optional: Trigger low stock warning
         },
-      },
+    },
 
 })
 module.exports = mongoose.model('food_item', productSchema)

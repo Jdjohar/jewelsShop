@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Footer from '../components/Footer';
-import Navbar from '../components/Navbar2';
+import Navbar from '../components/Navbar';
 
 export default function MyOrder() {
     const [orderData, setOrderData] = useState([]);

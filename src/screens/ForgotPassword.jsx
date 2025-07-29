@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import Navbar2 from '../components/Navbar2'; // Consistent with Login.jsx
+import Navbar2 from '../components/Navbar'; // Consistent with Login.jsx
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -40,7 +40,7 @@ export default function ForgotPassword() {
 
   return (
     <div>
-      <Navbar2 />
+      <Navbar />
 
       <div className="container py-5">
         <div className="row py-5 g-0 h-100">

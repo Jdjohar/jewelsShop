@@ -95,6 +95,32 @@ export default function AdminNavbar(props) {
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
+              <i className="bi bi-tags me-2"></i> Brands
+            </a>
+            <ul className="dropdown-menu dropdown-menu-dark">
+              <li>
+                <Link className="dropdown-item" to="/admin/addbrand">
+                  Add Brand
+                </Link>
+              </li>
+              <li>
+                <Link className="dropdown-item" to="/admin/brandList">
+                  Brand List
+                </Link>
+              </li>
+              <li>
+                <hr className="dropdown-divider" />
+              </li>
+              
+            </ul>
+          </li>
+          <li>
+            <a
+              className="nav-link text-white dropdown-toggle"
+              href="#"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
               <i className="bi bi-cart me-2"></i> Orders
             </a>
             <ul className="dropdown-menu dropdown-menu-dark">
