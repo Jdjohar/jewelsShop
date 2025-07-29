@@ -8,7 +8,7 @@ const AddProduct = () => {
     description: '',
     CategoryName: '',
     brandName: '',
-    collection: '',
+    pcollection: '',
     img: null,
     featured: false,
     quantity: '',
@@ -119,7 +119,7 @@ const AddProduct = () => {
     formData.append('description', staticFormData.description);
     formData.append('CategoryName', staticFormData.CategoryName);
     formData.append('brandName', staticFormData.brandName);
-    formData.append('collection', staticFormData.collection);
+    formData.append('pcollection', staticFormData.pcollection);
     formData.append('img', staticFormData.img);
     formData.append('featured', staticFormData.featured);
     formData.append('quantity', staticFormData.quantity);
@@ -146,7 +146,7 @@ const AddProduct = () => {
           description: '',
           CategoryName: '',
           brandName: '',
-          collection: '',
+          pcollection: '',
           img: null,
           featured: false,
           quantity: '',
@@ -259,12 +259,12 @@ const AddProduct = () => {
                     </div>
 
                     <div className="mb-3">
-                      <label htmlFor="collection" className="form-label fw-bold">Collection</label>
+                      <label htmlFor="pcollection" className="form-label fw-bold">Collection</label>
                       <select
-                        id="collection"
+                        id="pcollection"
                         className="form-control"
-                        value={staticFormData.collection}
-                        onChange={(e) => handleStaticInputChange('collection', e.target.value)}
+                        value={staticFormData.pcollection}
+                        onChange={(e) => handleStaticInputChange('pcollection', e.target.value)}
                       >
                         <option value="">Select Collection</option>
                         {collections.map((col) => (

@@ -963,8 +963,6 @@ router.delete('/brand/:id', async (req, res) => {
 });
 // Define a route to handle product creation with Cloudinary image upload
 router.post('/addproducts', upload.single('img'), async (req, res) => {
-  const validCollections = ['Men', 'Women', 'Unisex'];
-const cleanCollection = validCollections.includes(collection) ? collection : undefined;
   try {
     const {
       name,
@@ -976,7 +974,9 @@ const cleanCollection = validCollections.includes(collection) ? collection : und
       featured,
       quantity
     } = req.body;
-
+    
+    const validCollections = ['Men', 'Women', 'Unisex'];
+  const cleanCollection = validCollections.includes(collection) ? collection : undefined;
     // Upload product image to Cloudinary
     const uploadedImg = await cloudinary.uploader.upload(req.file.path, {
       upload_preset: 'employeeApp',
@@ -1001,7 +1001,7 @@ const cleanCollection = validCollections.includes(collection) ? collection : und
     const newProduct = new Products({
       name,
       description,
-      category: category._id,
+      CategoryName: category.CategoryName,
       brand: brand ? brand._id : undefined,
       collection,
       img: uploadedImg.secure_url,

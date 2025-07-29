@@ -9,30 +9,32 @@ const app = express();
 const port = 5000;
 const path = require('path');
 const router = express.Router();
+const cors = require('cors');
 const { job } = require('./cron');
-job.start(); 
+job.start();
 // Middleware for serving static files
 app.use(express.static(path.join(__dirname, 'uploads')));
-job.start(); 
+job.start();
 // CORS setup
-app.use((req, res, next) => {
-  const corsWhitelist = [
-    "https://jewels-shop-ten.vercel.app",
-    "http://localhost:5173",
-  ];
-  if (corsWhitelist.indexOf(req.headers.origin) !== -1) {
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Origin, X-Requested-With, Accept");
-  }
-  next();
-});
 
-app.use('/', require('./Routes/Webhook'));
-// Apply express.json() for all other routes EXCEPT the webhook
+const corsOptions = {
+  origin: [
+    "https://jewels-shop-ten.vercel.app",
+    "http://localhost:5173"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Origin", "X-Requested-With", "Accept"],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Optional
+
+app.use(express.static(path.join(__dirname, 'uploads')));
 app.use(express.json());
 
-// Default route
+app.use('/', require('./Routes/Webhook'));
+app.use('/api/auth', require('./Routes/Auth'));
+
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
