@@ -17,8 +17,7 @@ job.start();
 // CORS setup
 app.use((req, res, next) => {
   const corsWhitelist = [
-    "https://ek-dastar-store.vercel.app",
-    "https://www.ekdastar.com.au",
+    "https://jewels-shop-ten.vercel.app",
     "http://localhost:5173",
   ];
   if (corsWhitelist.indexOf(req.headers.origin) !== -1) {
