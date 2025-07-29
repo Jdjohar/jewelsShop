@@ -13,7 +13,7 @@ const { job } = require('./cron');
 job.start(); 
 // Middleware for serving static files
 app.use(express.static(path.join(__dirname, 'uploads')));
-
+job.start(); 
 // CORS setup
 app.use((req, res, next) => {
   const corsWhitelist = [
