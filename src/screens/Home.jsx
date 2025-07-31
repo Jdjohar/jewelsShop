@@ -14,21 +14,40 @@ export default function Home() {
   const [foodItems, setFoodItems] = useState([]);
   const [search, setSearch] = useState('');
 
-  const loadFoodItems = async () => {
-    let response = await fetch('https://jewelsshop.onrender.com/api/auth/foodData', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    response = await response.json();
-    setFoodItems(response[0]);
-    setFoodCat(response[1]);
-  };
+  // const loadFoodItems = async () => {
+  //   let response = await fetch('https://jewelsshop.onrender.com/api/auth/foodData', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     },
+  //   });
+  //   response = await response.json();
+  //   setFoodItems(response[0]);
+  //   setFoodCat(response[1]);
+  // };
+  const loadHomeData = async () => {
+  try {
+    const [productsRes, categoriesRes] = await Promise.all([
+      fetch('https://jewelsshop.onrender.com/api/auth/featured-products'),
+      fetch('https://jewelsshop.onrender.com/api/auth/categories'),
+    ]);
 
-  useEffect(() => {
-    loadFoodItems();
-  }, []);
+    
+    
+    const featuredData = await productsRes.json();
+    const categoryData = await categoriesRes.json();
+    console.log(featuredData, categoryData,"categoryData");
+    
+    setFoodItems(featuredData.data); // only featured items
+    setFoodCat(categoryData.data);
+  } catch (error) {
+    console.error("Error loading home data:", error);
+  }
+};
+
+useEffect(() => {
+  loadHomeData();
+}, []);
 
   const featuredItems = foodItems.filter((item) => item.featured === true);
 
@@ -49,13 +68,13 @@ export default function Home() {
           </div>
           <div className="carousel-inner">
             <div className="carousel-item active">
-              <img src={slider} className="d-block w-100 carousel-img" alt="Slide 1" />
+              <img loading="lazy" src ={slider} className="d-block w-100 carousel-img" alt="Slide 1" />
             </div>
             <div className="carousel-item">
-              <img src={slider2} className="d-block w-100 carousel-img" alt="Slide 2" />
+              <img loading="lazy" src ={slider2} className="d-block w-100 carousel-img" alt="Slide 2" />
             </div>
             <div className="carousel-item">
-              <img src={slider3} className="d-block w-100 carousel-img" alt="Slide 3" />
+              <img loading="lazy" src ={slider3} className="d-block w-100 carousel-img" alt="Slide 3" />
             </div>
           </div>
           <button className="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
@@ -105,6 +124,7 @@ export default function Home() {
         {/* <a href="pages/products.html" className="btn btn-outline-primary">View All</a> */}
       </div>
           <div className="row">
+            {console.log(featuredItems,"featuredItems")}
             {featuredItems.length > 0 ? (
               featuredItems.map((item) => (
                 <div key={item._id} className="col-12 col-md-6 col-lg-3 mb-4">
@@ -114,7 +134,7 @@ export default function Home() {
                     item={item}
                     options={item.options[0]}
                     ImgSrc={item.img}
-                     slug={item.slug}
+                    slug={item.slug}
                   />
                 </div>
               ))

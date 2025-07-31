@@ -1,52 +1,28 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const slugify = require('slugify'); // <-- add this
+
 const { Schema } = mongoose;
 
 const productSchema = new Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    description: {
-        type: String,
-        required: false,
-    },
-    CategoryName: {
-        type: String,
-        required: true,
-    },
-    img: {
-        type: String,
-        required: true,
-    },
-    brand: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Brand',
-        required: false, // Some products may be generic
-    },
-   pcollection: {
-    type: String,
-    enum: ['Men', 'Women', 'Unisex'],
-    required: false,
-    default: undefined,
-},
-    featured: {
-        type: Boolean,
-        required: false,
-        default: 'false'
-    },
-    options: [],
-    inventory: {
-        quantity: {
-            type: Number,
-            required: true,
-            default: 0, // Default stock quantity
-        },
-        lowStockThreshold: {
-            type: Number,
-            required: false,
-            default: 5, // Optional: Trigger low stock warning
-        },
-    },
+  name: { type: String, required: true },
+  slug: { type: String, unique: true }, // <-- add this
+  description: { type: String },
+  CategoryName: { type: String, required: true },
+  img: { type: String, required: true },
+  featured: { type: Boolean, default: false },
+  options: [],
+  inventory: {
+    quantity: { type: Number, required: true, default: 0 },
+    lowStockThreshold: { type: Number, default: 5 },
+  }
+});
 
-})
-module.exports = mongoose.model('food_item', productSchema)
+// Create slug before saving
+productSchema.pre('save', function (next) {
+  if (!this.slug) {
+    this.slug = slugify(this.name, { lower: true, strict: true });
+  }
+  next();
+});
+
+module.exports = mongoose.model('food_item', productSchema);

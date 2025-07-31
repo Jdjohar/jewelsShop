@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCart, useDispatchCart } from '../components/ContextReducer';
-import Navbar2 from '../components/Navbar';
+import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Link, useNavigate } from 'react-router-dom';
 

@@ -330,6 +330,20 @@ router.post('/foodData', async (req, res) => {
   }
 })
 
+// ✅ New route: only get featured products
+router.get('/featured-products', async (req, res) => {
+  try {
+    const featuredProducts = await Products.find({ featured: true }).limit(6); // limit optional
+    res.status(200).json({
+      status: 'success',
+      data: featuredProducts,
+    });
+  } catch (error) {
+    console.error('Error fetching featured products:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 router.post('/orderData', async (req, res) => {
   let data = req.body.order_data
   await data.splice(0, 0, { Order_date: req.body.order_date })
@@ -1235,7 +1249,20 @@ router.delete('/product/:id', async (req, res) => {
   }
 });
 
+router.get('/product/slug/:slug', async (req, res) => {
+  try {
+    const product = await Products.findOne({ slug: req.params.slug });
 
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 router.get('/product/search', async (req, res) => {
   try {
     const searchTerm = req.query.q; // Query parameter for search term
