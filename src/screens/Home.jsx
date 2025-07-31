@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Card from '../components/Card';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
-import slider from '../../public/slider1.webp';
-import slider2 from '../../public/slider2.webp';
-import slider3 from '../../public/slider3.jpg';
+import slider from '../../public/slide.avif';
+import slider2 from '../../public/slide2.avif';
 import { Link } from 'react-router-dom';
 import { Truck, DollarSign, Clock } from 'lucide-react';
 import { Helmet } from 'react-helmet';
@@ -64,7 +63,7 @@ useEffect(() => {
           <div className="carousel-indicators">
             <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" className="active" aria-current="true" aria-label="Slide 1"></button>
             <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            {/* <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button> */}
           </div>
           <div className="carousel-inner">
             <div className="carousel-item active">
@@ -73,9 +72,9 @@ useEffect(() => {
             <div className="carousel-item">
               <img loading="lazy" src ={slider2} className="d-block w-100 carousel-img" alt="Slide 2" />
             </div>
-            <div className="carousel-item">
+            {/* <div className="carousel-item">
               <img loading="lazy" src ={slider3} className="d-block w-100 carousel-img" alt="Slide 3" />
-            </div>
+            </div> */}
           </div>
           <button className="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
             <span className="carousel-control-prev-icon" aria-hidden="true"></span>

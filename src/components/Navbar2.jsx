@@ -56,7 +56,7 @@ export default function Navbar(props) {
                 <Link className="nav-link active" to="/">Home</Link>
               </li>
               <li className="nav-item dropdown">
-                <Link className="nav-link dropdown-toggle" to="/categoies">
+                <Link className="nav-link dropdown-toggle" to="/categories">
                   Categories
                 </Link>
 
