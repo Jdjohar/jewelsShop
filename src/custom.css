@@ -141,6 +141,7 @@ h1, h2, h3, h4, h5, h6,
   width: 100%;
   height: 500px;
   object-fit: cover;
+          margin-top: 15px;
 }
 
 .carousel-control-prev,
@@ -152,11 +153,20 @@ h1, h2, h3, h4, h5, h6,
   margin-bottom: 1rem;
 }
 
+.navbar {
+  margin-top: 30px;
+  transition: margin-top 0.3s ease;
+}
+
+.navbar.scrolled {
+  margin-top: 0;
+}
+
 .carousel-indicators [data-bs-target] {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: var(--primary);
+  background-color:#fff;
   opacity: 0.5;
 }
 

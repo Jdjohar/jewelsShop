@@ -128,7 +128,7 @@ const CartPage = () => {
                                 <div className="card-body">
                                     <div className="d-flex justify-content-between mb-2">
                                         <span>Subtotal</span>
-                                        <span className="fw-bold">${subtotal.toFixed(2)} AUD</span>
+                                        <span className="fw-bold">${subtotal.toFixed(2)} CAD</span>
                                     </div>
                                     <div className="d-flex justify-content-between mb-2">
                                         <span>GST (10%)</span>
@@ -145,7 +145,7 @@ const CartPage = () => {
                                     <hr />
                                     <div className="d-flex justify-content-between mb-4">
                                         <span className="h5">Total</span>
-                                        <span className="h5">${total.toFixed(2)} AUD</span>
+                                        <span className="h5">${total.toFixed(2)} CAD</span>
                                     </div>
                                     <Link to="/checkoutpage" className="btn btn-primary w-100">
                                         Proceed to Checkout

@@ -12,7 +12,7 @@ const Contact = () => {
   return (
     <>
       <Helmet>
-        <title>Contact Us | Australia | Store name</title>
+        <title>Contact Us | Trezoar</title>
       </Helmet>
 
       <Navbar />

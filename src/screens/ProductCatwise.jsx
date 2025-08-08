@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import Card from '../components/Card';
 import { useParams } from 'react-router-dom';
 import Footer from '../components/Footer';
-import Navbar from '../components/Navbar2';
+import Navbar from '../components/Navbar';
 import { Helmet } from 'react-helmet';
+import ShimmerCard from '../components/ShimmerCard'
 
 const ProductCatwise = () => {
     const { categoryName } = useParams();
@@ -13,6 +14,7 @@ const ProductCatwise = () => {
     const [viewMode, setViewMode] = useState('grid');
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
+    const [loading, setLoading] = useState(true);
     const [categoryFilters, setCategoryFilters] = useState({});
 
     // Pagination state
@@ -29,7 +31,7 @@ const ProductCatwise = () => {
                 response = await response.json();
                 setFoodItems(response[0]);
                 setFoodCat(response[1]);
-
+setLoading(false)
                 const initialFiltered = categoryName
                     ? response[0].filter((item) => item.CategoryName.toLowerCase() === categoryName.toLowerCase())
                     : response[0];
@@ -52,9 +54,9 @@ const ProductCatwise = () => {
     useEffect(() => {
         if (categoryName) {
             const formattedCategory = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
-            document.title = `Store name | ${formattedCategory}`;
+            document.title = `Trezoar | ${formattedCategory}`;
         } else {
-            document.title = 'Store name | All Products';
+            document.title = 'Trezoar | All Products';
         }
     }, [categoryName]);
 
@@ -121,7 +123,7 @@ const ProductCatwise = () => {
     return (
         <div>
             <Helmet>
-                <title>{categoryName} | Australia | Store name</title>
+                <title>{categoryName} | Trezoar</title>
             </Helmet>
             <Navbar />
 
@@ -241,18 +243,29 @@ const ProductCatwise = () => {
                             </div>
 
                             <div className={`row g-4 ${viewMode === 'list' ? 'list-view' : ''}`}>
-                                {currentProducts.length > 0 ? (
+                                {loading ? (
+                                    Array(6) // show 6 shimmer items
+                                        .fill()
+                                        .map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className={viewMode === 'grid' ? 'col-lg-4 col-md-6' : 'col-12 mb-3'}
+                                            >
+                                                <ShimmerCard />
+                                            </div>
+                                        ))
+                                ) : currentProducts.length > 0 ? (
                                     currentProducts.map((product) => (
                                         <div
                                             key={product._id}
-                                            className={viewMode === 'grid' ? 'col-lg-4 col-md-6' : 'col-12 mb-3'}
+                                            className={viewMode === 'grid' ? 'col-6 col-lg-4 col-md-6' : 'col-12 mb-3'}
                                         >
                                             <Card
                                                 item={product}
                                                 options={product.options[0]}
                                                 foodName={product.name}
                                                 ImgSrc={product.img}
-                                                  slug={product.slug}
+                                                slug={product.slug}
                                             />
                                         </div>
                                     ))

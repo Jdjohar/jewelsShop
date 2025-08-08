@@ -566,7 +566,7 @@ router.post('/payment', async (req, res) => {
                 billingAddress: billingAddress.address,
                 shippingAddress: shippingAddress.address,
                 amount: amount, // Keep original amount in dollars
-                currency: 'AUD',
+                currency: 'CAD',
                 status: 'pending',
             });
             await order.save();
@@ -583,7 +583,7 @@ router.post('/payment', async (req, res) => {
 
         const paymentIntent = await stripe.paymentIntents.create({
             amount: amountInCents,
-            currency: 'AUD',
+            currency: 'CAD',
             payment_method_types: ['card'],
             payment_method: paymentMethodId,
             description: description || 'Payment for order',
@@ -792,7 +792,7 @@ router.post('/create-intent', async (req, res) => {
 
         const paymentIntent = await stripe.paymentIntents.create({
             amount,
-            currency: currency || 'AUD',
+            currency: currency || 'CAD',
             payment_method_types: ['card'],
             receipt_email: billing_details.email,
             description: description || 'Payment for order',

@@ -7,12 +7,13 @@ import slider2 from '../../public/slide2.avif';
 import { Link } from 'react-router-dom';
 import { Truck, DollarSign, Clock } from 'lucide-react';
 import { Helmet } from 'react-helmet';
+import ShimmerCard from '../components/ShimmerCard'
 
 export default function Home() {
   const [foodCat, setFoodCat] = useState([]);
   const [foodItems, setFoodItems] = useState([]);
   const [search, setSearch] = useState('');
-
+  const [loading, setLoading] = useState(true);
   // const loadFoodItems = async () => {
   //   let response = await fetch('https://jewelsshop.onrender.com/api/auth/foodData', {
   //     method: 'POST',
@@ -25,36 +26,35 @@ export default function Home() {
   //   setFoodCat(response[1]);
   // };
   const loadHomeData = async () => {
-  try {
-    const [productsRes, categoriesRes] = await Promise.all([
-      fetch('https://jewelsshop.onrender.com/api/auth/featured-products'),
-      fetch('https://jewelsshop.onrender.com/api/auth/categories'),
-    ]);
+    try {
+      const [productsRes, categoriesRes] = await Promise.all([
+        fetch('https://jewelsshop.onrender.com/api/auth/featured-products'),
+        fetch('https://jewelsshop.onrender.com/api/auth/categories'),
+      ]);
 
-    
-    
-    const featuredData = await productsRes.json();
-    const categoryData = await categoriesRes.json();
-    console.log(featuredData, categoryData,"categoryData");
-    
-    setFoodItems(featuredData.data); // only featured items
-    setFoodCat(categoryData.data);
-  } catch (error) {
-    console.error("Error loading home data:", error);
-  }
-};
+      const featuredData = await productsRes.json();
+      const categoryData = await categoriesRes.json();
+      console.log(featuredData, categoryData, "categoryData");
+      setFoodItems(featuredData.data); // only featured items
+      setFoodCat(categoryData.data);
+      setLoading(false)
 
-useEffect(() => {
-  loadHomeData();
-}, []);
+    } catch (error) {
+      console.error("Error loading home data:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadHomeData();
+  }, []);
 
   const featuredItems = foodItems.filter((item) => item.featured === true);
 
   return (
     <div>
-     <Helmet>
-  <title>Punjabi Dastar, Pagg Store | Australia | Store name</title>
-</Helmet>
+      <Helmet>
+        <title>All Fashion Store | Trezoar</title>
+      </Helmet>
       <Navbar />
 
 
@@ -67,10 +67,10 @@ useEffect(() => {
           </div>
           <div className="carousel-inner">
             <div className="carousel-item active">
-              <img loading="lazy" src ={slider} className="d-block w-100 carousel-img" alt="Slide 1" />
+              <img loading="lazy" src={slider} className="d-block w-100 carousel-img" alt="Slide 1" />
             </div>
             <div className="carousel-item">
-              <img loading="lazy" src ={slider2} className="d-block w-100 carousel-img" alt="Slide 2" />
+              <img loading="lazy" src={slider2} className="d-block w-100 carousel-img" alt="Slide 2" />
             </div>
             {/* <div className="carousel-item">
               <img loading="lazy" src ={slider3} className="d-block w-100 carousel-img" alt="Slide 3" />
@@ -90,102 +90,110 @@ useEffect(() => {
 
       {/* Category Section */}
       <section className="py-5">
-    <div className="container">
-      <h2 className="text-center mb-4">Shop by Category</h2>
+        <div className="container">
+          <h2 className="text-center mb-4">Shop by Category</h2>
           <div className="row g-4">
-            {foodCat.map((category) => (
-              <div className="col-md-3 col-sm-6" key={category._id}>
-                <Link to={`/products/${category.CategoryName}`} className="text-decoration-none">
-                  <div className="card category-card h-100">
-                    <div className="category-img-container">
-                      <img  src={category.img} className="card-img-top" alt="Electronics" />
+            {loading
+              ? Array(4).fill().map((_, i) => (
+                <div className="col-6 col-md-3 col-sm-6" key={i}>
+                  <ShimmerCard />
+                </div>
+              ))
+              : foodCat.map((category) => (
+                <div className="col-6 col-md-3 col-sm-6" key={category._id}>
+                  <Link to={`/products/${category.CategoryName}`} className="text-decoration-none">
+                    <div className="card category-card h-100">
+                      <div className="category-img-container">
+                        <img src={category.img} className="card-img-top" alt={category.CategoryName} />
+                      </div>
+                      <div className="card-body text-center">
+                        <h5 className="card-title">{category.CategoryName}</h5>
+                      </div>
                     </div>
-                    <div className="card-body text-center">
-                      <h5 className="card-title">{category.CategoryName}</h5>
-                     
-                    </div>
-                  </div>
-                </Link>
-                
-              </div>
-            ))}
+                  </Link>
+                </div>
+              ))}
           </div>
         </div>
       </section>
-      
+
 
       {/* Featured Products Section */}
 
-  <section className="py-5 bg-light">
-    <div className="container">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">Featured Products</h2>
-        {/* <a href="pages/products.html" className="btn btn-outline-primary">View All</a> */}
-      </div>
+      <section className="py-5 bg-light">
+        <div className="container">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2 className="mb-0">Featured Products</h2>
+            {/* <a href="pages/products.html" className="btn btn-outline-primary">View All</a> */}
+          </div>
           <div className="row">
-            {console.log(featuredItems,"featuredItems")}
-            {featuredItems.length > 0 ? (
-              featuredItems.map((item) => (
-                <div key={item._id} className="col-12 col-md-6 col-lg-3 mb-4">
-                  <Card
-                    foodName={item.name}
-                    CategoryName={item.CategoryName}
-                    item={item}
-                    options={item.options[0]}
-                    ImgSrc={item.img}
-                    slug={item.slug}
-                  />
+            {loading
+              ? Array(4).fill().map((_, i) => (
+                <div key={i} className="col-6 col-md-6 col-lg-3 mb-4">
+                  <ShimmerCard />
                 </div>
               ))
-            ) : (
-              <p className="text-center">No featured products available</p>
-            )}
+              : featuredItems.length > 0
+                ? featuredItems.map((item) => (
+                  <div key={item._id} className="col-6 col-md-6 col-lg-3 mb-4">
+                    <Card
+                      foodName={item.name}
+                      CategoryName={item.CategoryName}
+                      item={item}
+                      options={item.options[0]}
+                      ImgSrc={item.img}
+                      slug={item.slug}
+                    />
+                  </div>
+                ))
+                : <p className="text-center">No featured products available</p>
+            }
           </div>
         </div>
       </section>
       {/* <!-- Benefits Section --> */}
-  <section className="py-5">
-    <div className="container">
-      <div className="row g-4">
-        <div className="col-md-3 col-sm-6">
-          <div className="benefit-item text-center">
-            <div className="benefit-icon rounded-circle bg-primary-subtle p-3 mx-auto mb-3">
-              <i className="bi bi-truck fs-2 text-primary"></i>
+      <section className="py-5">
+        <div className="container">
+          <div className="row g-4">
+            <div className="col-6 col-md-3 col-sm-6">
+              <div className="benefit-item text-center">
+                <div className="benefit-icon rounded-circle bg-primary-subtle p-3 mx-auto mb-3">
+                  <i className="bi bi-truck fs-2 text-primary"></i>
+                </div>
+                <h5>Free Shipping</h5>
+                <p className="text-muted">On orders over $99</p>
+              </div>
             </div>
-            <h5>Free Shipping</h5>
-            <p className="text-muted">On orders over $99</p>
+            <div className="col-6 col-md-3 col-sm-6">
+              <div className="benefit-item text-center">
+                <div className="benefit-icon rounded-circle bg-primary-subtle p-3 mx-auto mb-3">
+                  <i className="bi bi-arrow-repeat fs-2 text-primary"></i>
+                </div>
+                <h5>Easy Returns</h5>
+                <p className="text-muted">5-7 day return policy</p>
+              </div>
+            </div>
+            <div className="col-6 col-md-3 col-sm-6">
+              <div className="benefit-item text-center">
+                <div className="benefit-icon rounded-circle bg-primary-subtle p-3 mx-auto mb-3">
+                  <i className="bi bi-shield-check fs-2 text-primary"></i>
+                </div>
+                <h5>Secure Payment</h5>
+                <p className="text-muted">Protected checkout</p>
+              </div>
+            </div>
+            <div className="col-6 col-md-3 col-sm-6">
+              <div className="benefit-item text-center">
+                <div className="benefit-icon rounded-circle bg-primary-subtle p-3 mx-auto mb-3">
+                  <i className="bi bi-headset fs-2 text-primary"></i>
+                </div>
+                <h5>Email Support</h5>
+                <p className="text-muted"><a className='text-decoration-none text-muted' href="mailto:Ekdastar@gmail.com">Ekdastar@gmail.com</a></p>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="col-md-3 col-sm-6">
-          <div className="benefit-item text-center">
-            <div className="benefit-icon rounded-circle bg-primary-subtle p-3 mx-auto mb-3">
-              <i className="bi bi-arrow-repeat fs-2 text-primary"></i>
-            </div>
-            <h5>Easy Returns</h5>
-            <p className="text-muted">5-7 day return policy</p>
-          </div>
-        </div>
-        <div className="col-md-3 col-sm-6">
-          <div className="benefit-item text-center">
-            <div className="benefit-icon rounded-circle bg-primary-subtle p-3 mx-auto mb-3">
-              <i className="bi bi-shield-check fs-2 text-primary"></i>
-            </div>
-            <h5>Secure Payment</h5>
-            <p className="text-muted">Protected checkout</p>
-          </div>
-        </div>
-        <div className="col-md-3 col-sm-6">
-          <div className="benefit-item text-center">
-            <div className="benefit-icon rounded-circle bg-primary-subtle p-3 mx-auto mb-3">
-              <i className="bi bi-headset fs-2 text-primary"></i>
-            </div>
-            <h5>Email Support</h5>
-            <p className="text-muted"><a className='text-decoration-none text-muted' href="mailto:Ekdastar@gmail.com">Ekdastar@gmail.com</a></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+      </section>
 
 
 

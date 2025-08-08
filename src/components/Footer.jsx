@@ -10,7 +10,7 @@ export default function Footer() {
           <img src={logo} alt="Logo" style={{ width: '70px', height: 'auto' }} />
             <h5 className="my-3">ABOUT THE SHOP</h5>
             <p>
-              Store name is your destination for Sikh Style. Started in 2015, we have been serving customers all over the world with our premium quality turbans and accessories. Your style is unique to you and we want to ensure you can create the best version of yourself.
+              Trezoar is your destination for Sikh Style. Started in 2015, we have been serving customers all over the world with our premium quality turbans and accessories. Your style is unique to you and we want to ensure you can create the best version of yourself.
             </p>
             <div className="social-links">
             <a href="https://www.facebook.com/profile.php?id=61566684246985" className="btn btn-outline-light btn-sm me-2"><i className="bi bi-facebook"></i></a>
@@ -47,7 +47,7 @@ export default function Footer() {
         <hr />
         <div className="row">
           <div className="col-12 mb-3 text-center">
-            <small>&copy; {new Date().getFullYear()} Store name</small>
+            <small>&copy; {new Date().getFullYear()} Trezoar</small>
           </div>
         </div>
       </div>
