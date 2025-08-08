@@ -34,7 +34,7 @@ const australianCities = {
 const SHIPPING_OPTIONS = [
   { id: 'economy', name: 'Economy', price: 6, days: 25, label: '$6 - 25 days' },
   { id: 'priority', name: 'Priority', price: 15, days: 15, label: '$15 - 15 days' },
-  { id: 'Free', name: 'Free', price: 0, days: 15, label: '$0 - 35 days' },
+  { id: 'Free', name: 'Free', price: 0, days: 30, label: '$0 - 35 days' },
 ];
 
 const CheckoutForm = () => {
@@ -1060,6 +1060,20 @@ const CheckoutForm = () => {
                     />
                     <label className="form-check-label" htmlFor="shipPriority">
                       {SHIPPING_OPTIONS[1].label}
+                    </label>
+                  </div>
+                  <div className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="shippingOption"
+                      id="shipFree"
+                      value="free"
+                      checked={shippingOption === 'free'}
+                      onChange={(e) => setShippingOption(e.target.value)}
+                    />
+                    <label className="form-check-label" htmlFor="shipPriority">
+                      {SHIPPING_OPTIONS[2].label}
                     </label>
                   </div>
                   <small className="text-muted">
