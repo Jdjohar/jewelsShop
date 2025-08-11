@@ -15,7 +15,7 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   // const loadFoodItems = async () => {
-  //   let response = await fetch('http://localhost:5000/api/auth/foodData', {
+  //   let response = await fetch('https://jewelsshop.onrender.com/api/auth/foodData', {
   //     method: 'POST',
   //     headers: {
   //       'Content-Type': 'application/json',
@@ -28,8 +28,8 @@ export default function Home() {
   const loadHomeData = async () => {
     try {
       const [productsRes, categoriesRes] = await Promise.all([
-        fetch('http://localhost:5000/api/auth/featured-products'),
-        fetch('http://localhost:5000/api/auth/categories'),
+        fetch('https://jewelsshop.onrender.com/api/auth/featured-products'),
+        fetch('https://jewelsshop.onrender.com/api/auth/categories'),
       ]);
 
       const featuredData = await productsRes.json();
@@ -160,8 +160,8 @@ export default function Home() {
                 <div className="benefit-icon rounded-circle bg-primary-subtle p-3 mx-auto mb-3">
                   <i className="bi bi-truck fs-2 text-primary"></i>
                 </div>
-                <h5>Free Shipping</h5>
-                <p className="text-muted">On orders over $99</p>
+                <h5>Top Brands</h5>
+                <p className="text-muted">Choose from top brands products</p>
               </div>
             </div>
             <div className="col-6 col-md-3 col-sm-6">

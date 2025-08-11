@@ -30,7 +30,7 @@ const CheckoutForm = () => {
     }
 
     // Create the PaymentIntent and obtain clientSecret from your server endpoint
-    const res = await fetch('http://localhost:5000/api/auth/create-intent', {
+    const res = await fetch('https://jewelsshop.onrender.com/api/auth/create-intent', {
       method: 'POST',
     });
 

@@ -149,7 +149,7 @@ const Contact = () => {
                   </h2>
                   <div id="faqCollapse1" className="accordion-collapse collapse show" aria-labelledby="faq1" data-bs-parent="#faqAccordion">
                     <div className="accordion-body">
-                      We offer Standard Shipping at a flat rate of $9.99. Orders over $99 qualify for Free Shipping. Delivery times typically range from 3 to 7 business days, depending on your location.
+                    We offer Standard Shipping at a flat rate of $6 with delivery in approximately 25 days, or Expedited Shipping at $15 with delivery in approximately 15 days.
                     </div>
                   </div>
                 </div>

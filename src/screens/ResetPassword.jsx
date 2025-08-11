@@ -19,7 +19,7 @@ export default function ResetPassword() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/reset-password/${resetToken}`, {
+      const response = await fetch(`https://jewelsshop.onrender.com/api/auth/reset-password/${resetToken}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

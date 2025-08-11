@@ -64,7 +64,7 @@ const ViewProduct = () => {
         const fetchProduct = async () => {
             console.log("CAll fetch");
             try {
-                const response = await fetch(`http://localhost:5000/api/auth/product/slug/${slug}`);
+                const response = await fetch(`https://jewelsshop.onrender.com/api/auth/product/slug/${slug}`);
                 const data = await response.json();
                 console.log(data, "CAll");
                 if (response.status === 200) {
