@@ -15,7 +15,7 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   // const loadFoodItems = async () => {
-  //   let response = await fetch('https://jewelsshop.onrender.com/api/auth/foodData', {
+  //   let response = await fetch('http://localhost:5000/api/auth/foodData', {
   //     method: 'POST',
   //     headers: {
   //       'Content-Type': 'application/json',
@@ -28,8 +28,8 @@ export default function Home() {
   const loadHomeData = async () => {
     try {
       const [productsRes, categoriesRes] = await Promise.all([
-        fetch('https://jewelsshop.onrender.com/api/auth/featured-products'),
-        fetch('https://jewelsshop.onrender.com/api/auth/categories'),
+        fetch('http://localhost:5000/api/auth/featured-products'),
+        fetch('http://localhost:5000/api/auth/categories'),
       ]);
 
       const featuredData = await productsRes.json();

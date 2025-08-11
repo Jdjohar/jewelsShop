@@ -24,7 +24,7 @@ const AddBrand = () => {
     formData.append('img', brandData.img);
 
     try {
-      const response = await fetch('https://jewelsshop.onrender.com/api/auth/addbrand', {
+      const response = await fetch('http://localhost:5000/api/auth/addbrand', {
         method: 'POST',
         body: formData,
       });

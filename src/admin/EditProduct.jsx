@@ -23,7 +23,7 @@ const EditProduct = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('https://jewelsshop.onrender.com/api/auth/categories');
+        const response = await fetch('http://localhost:5000/api/auth/categories');
         const result = await response.json();
         if (result.data) setCategories(result.data);
       } catch (error) {
@@ -34,7 +34,7 @@ const EditProduct = () => {
     const fetchProduct = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`https://jewelsshop.onrender.com/api/auth/product/${id}`);
+        const response = await fetch(`http://localhost:5000/api/auth/product/${id}`);
         const result = await response.json();
 
         if (result.status === 'success') {
@@ -118,7 +118,7 @@ const EditProduct = () => {
     formData.append('options', JSON.stringify([productData.options])); // Wrap in array for consistency
 
     try {
-      const response = await fetch(`https://jewelsshop.onrender.com/api/auth/product/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/auth/product/${id}`, {
         method: 'PUT',
         body: formData,
       });

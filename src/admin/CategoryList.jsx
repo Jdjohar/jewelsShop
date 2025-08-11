@@ -14,7 +14,7 @@ const CategoryList = () => {
     const fetchCategories = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('https://jewelsshop.onrender.com/api/auth/categories');
+        const response = await fetch('http://localhost:5000/api/auth/categories');
         if (!response.ok) throw new Error('Failed to fetch categories');
         const data = await response.json();
         setCategories(data.data);
@@ -32,7 +32,7 @@ const CategoryList = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
       try {
-        const response = await fetch(`https://jewelsshop.onrender.com/api/auth/categories/${id}`, {
+        const response = await fetch(`http://localhost:5000/api/auth/categories/${id}`, {
           method: 'DELETE',
         });
 

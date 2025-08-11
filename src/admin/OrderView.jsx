@@ -23,7 +23,7 @@ const OrderView = () => {
     const fetchOrder = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`https://jewelsshop.onrender.com/api/auth/orders/${id}`);
+        const response = await fetch(`http://localhost:5000/api/auth/orders/${id}`);
         if (!response.ok) throw new Error('Failed to fetch order details');
         const data = await response.json();
         console.log(data, "data");
@@ -60,7 +60,7 @@ const OrderView = () => {
     };
 
     try {
-      const response = await fetch(`https://jewelsshop.onrender.com/api/auth/orders/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/auth/orders/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedData),

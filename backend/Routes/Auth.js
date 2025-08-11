@@ -99,10 +99,10 @@ router.post('/createuser', [
         subject: 'Welcome to Our Store!',
         html: `
         <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-          <h1 style="color: #4CAF50;">Welcome to Ek Dastar, ${req.body.name}!</h1>
-          <p>Thank you for joining <strong>Ek Dastar</strong>, where tradition meets elegance. We're honored to be part of your journey in finding authentic turbans, patkas, and dumala sahibs.</p>
+          <h1 style="color: #4CAF50;">Welcome to Trezoar, ${req.body.name}!</h1>
+          <p>Thank you for joining <strong>Trezoar</strong>, where tradition meets elegance. We're honored to be part of your journey in finding authentic turbans, patkas, and dumala sahibs.</p>
       
-          <p>As a valued member of Ek Dastar, you now have access to:</p>
+          <p>As a valued member of Trezoar, you now have access to:</p>
           <ul>
             <li>Exclusive offers on premium turbans and accessories</li>
             <li>Personalized recommendations based on your unique style</li>
@@ -115,12 +115,12 @@ router.post('/createuser', [
           
           <p>If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:support@ekDastar.com" style="color: #4CAF50;">support@ekDastar.com</a>. Our team is here to ensure your shopping experience is as seamless as possible.</p>
       
-          <p>Welcome once again to the Ek Dastar family. We look forward to being a part of your journey.</p>
+          <p>Welcome once again to the Trezoar family. We look forward to being a part of your journey.</p>
       
-          <p>With respect and best wishes,<br>The Ek Dastar Team</p>
+          <p>With respect and best wishes,<br>The Trezoar Team</p>
       
           <hr style="border: none; border-top: 1px solid #ccc;">
-          <p style="font-size: 12px; color: #666;">You're receiving this email because you registered with Ek Dastar. If you didn’t sign up, please ignore this email or <a href="mailto:support@ekDastar.com" style="color: #666;">contact us</a>.</p>
+          <p style="font-size: 12px; color: #666;">You're receiving this email because you registered with Trezoar. If you didn’t sign up, please ignore this email or <a href="mailto:support@ekDastar.com" style="color: #666;">contact us</a>.</p>
         </div>
       `
       
@@ -446,7 +446,7 @@ router.put('/orders/:id', async (req, res) => {
           <p><strong>Status:</strong> ${orderStatus}</p>
           ${estimatedDelivery ? `<p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>` : ''}
           ${trackingNumber ? `<p><strong>Tracking Number:</strong> ${trackingNumber}</p>` : ''}
-          <p>Thank you for shopping with Ek Dastar!</p>
+          <p>Thank you for shopping with Trezoar!</p>
         `
       };
 
@@ -678,7 +678,7 @@ router.post('/checkoutOrder', async (req, res) => {
       const customerMailOptions = {
         from: 'jdwebserviecs1@gmail.com',
         to: billingAddress.email, // Customer's email
-        subject: 'Your Order with Ek Dastar has been Placed Successfully!',
+        subject: 'Your Order with Trezoar has been Placed Successfully!',
         html: `
           <h2>Thank you for your order, ${billingAddress.firstName}!</h2>
           <p>Your order has been placed successfully and is now being processed.</p>
@@ -687,7 +687,7 @@ router.post('/checkoutOrder', async (req, res) => {
           <p><strong>Total Amount:</strong> $${(totalAmount / 100).toFixed(2)}</p>
           <p><strong>Shipping Method:</strong> ${shippingMethod}</p>
           <p><strong>Payment Method:</strong> ${paymentMethod}</p>
-          <p>We will notify you once your order is shipped. Thank you for shopping with Ek Dastar!</p>
+          <p>We will notify you once your order is shipped. Thank you for shopping with Trezoar!</p>
         `
       };
 
@@ -695,10 +695,10 @@ router.post('/checkoutOrder', async (req, res) => {
       const ownerMailOptions = {
         from: 'jdwebserviecs1@gmail.com',
         to: 'jdeep514@gmail.com', // Owner's email address
-        subject: 'New Order Placed on Ek Dastar',
+        subject: 'New Order Placed on Trezoar',
         html: `
           <h2>New Order Alert!</h2>
-          <p>A new order has been placed on Ek Dastar.</p>
+          <p>A new order has been placed on Trezoar.</p>
           <h3>Order Details:</h3>
           <p><strong>Order ID:</strong> ${order._id}</p>
           <p><strong>Customer Name:</strong> ${billingAddress.firstName}</p>

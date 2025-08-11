@@ -6,6 +6,9 @@ const Checkout = require('../models/CheckOut');
 const User = require('../models/User'); 
 
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    
+    console.log('test webhook');
+    
     const sig = req.headers['stripe-signature'];
 
     let event;

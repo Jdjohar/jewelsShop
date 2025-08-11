@@ -26,7 +26,7 @@ const AddProduct = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('https://jewelsshop.onrender.com/api/auth/categories');
+        const response = await fetch('http://localhost:5000/api/auth/categories');
         if (response.ok) {
           const data = await response.json();
           setCategories(data.data);
@@ -38,7 +38,7 @@ const AddProduct = () => {
 
     const fetchBrands = async () => {
       try {
-        const response = await fetch('https://jewelsshop.onrender.com/api/auth/brands');
+        const response = await fetch('http://localhost:5000/api/auth/brands');
         if (response.ok) {
           const data = await response.json();
           setBrands(data.data);
@@ -89,7 +89,7 @@ const AddProduct = () => {
 
     setCsvUploadLoading(true);
     try {
-      const response = await fetch('https://jewelsshop.onrender.com/api/auth/import-csv', {
+      const response = await fetch('http://localhost:5000/api/auth/import-csv', {
         method: 'POST',
         body: formData,
       });
@@ -133,7 +133,7 @@ const AddProduct = () => {
     formData.append('options', opt);
 
     try {
-      const response = await fetch('https://jewelsshop.onrender.com/api/auth/addproducts', {
+      const response = await fetch('http://localhost:5000/api/auth/addproducts', {
         method: 'POST',
         body: formData,
       });

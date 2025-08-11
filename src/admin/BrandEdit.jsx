@@ -19,7 +19,7 @@ const BrandEdit = () => {
         console.log("result3");
       try {
         setIsLoading(true);
-        const response = await fetch(`https://jewelsshop.onrender.com/api/auth/brand/${id}`);
+        const response = await fetch(`http://localhost:5000/api/auth/brand/${id}`);
         const result = await response.json();
 console.log(result,"result");
 
@@ -60,7 +60,7 @@ console.log(result,"result");
     if (file) formData.append('img', file);
 
     try {
-      const response = await fetch(`https://jewelsshop.onrender.com/api/auth/brand/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/auth/brand/${id}`, {
         method: 'PUT',
         body: formData,
       });

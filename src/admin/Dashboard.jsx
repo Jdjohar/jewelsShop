@@ -49,22 +49,22 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         // Fetch Total Products
-        const productsRes = await fetch('https://jewelsshop.onrender.com/api/auth/total-products');
+        const productsRes = await fetch('http://localhost:5000/api/auth/total-products');
         const productsData = await productsRes.json();
         setTotalProducts(productsData.totalProducts);
 
         // Fetch Total Categories
-        const categoriesRes = await fetch('https://jewelsshop.onrender.com/api/auth/total-categories');
+        const categoriesRes = await fetch('http://localhost:5000/api/auth/total-categories');
         const categoriesData = await categoriesRes.json();
         setTotalCategories(categoriesData.totalCategories);
 
         // Fetch Total Featured Products
-        const featuredRes = await fetch('https://jewelsshop.onrender.com/api/auth/total-featured-products');
+        const featuredRes = await fetch('http://localhost:5000/api/auth/total-featured-products');
         const featuredData = await featuredRes.json();
         setTotalFeaturedProducts(featuredData.totalFeaturedProducts);
 
         // Fetch Sales Overview
-        const salesRes = await fetch('https://jewelsshop.onrender.com/api/auth/sales-overview');
+        const salesRes = await fetch('http://localhost:5000/api/auth/sales-overview');
         const salesData = await salesRes.json();
         setChartData(salesData);
       } catch (error) {

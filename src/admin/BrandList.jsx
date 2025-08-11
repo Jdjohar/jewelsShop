@@ -13,7 +13,7 @@ const BrandList = () => {
     const fetchBrands = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('https://jewelsshop.onrender.com/api/auth/brands');
+        const response = await fetch('http://localhost:5000/api/auth/brands');
         if (!response.ok) throw new Error('Failed to fetch brands');
         const data = await response.json();
         setBrands(data.data);
@@ -31,7 +31,7 @@ const BrandList = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this brand?')) {
       try {
-        const response = await fetch(`https://jewelsshop.onrender.com/api/auth/brand/${id}`, {
+        const response = await fetch(`http://localhost:5000/api/auth/brand/${id}`, {
           method: 'DELETE',
         });
 
