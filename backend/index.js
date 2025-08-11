@@ -30,9 +30,9 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Optional
 
 app.use(express.static(path.join(__dirname, 'uploads')));
-app.use(express.json());
 
 app.use('/', require('./Routes/Webhook'));
+app.use(express.json());
 app.use('/api/auth', require('./Routes/Auth'));
 
 app.get('/', (req, res) => {

@@ -680,16 +680,79 @@ router.post('/checkoutOrder', async (req, res) => {
         to: billingAddress.email, // Customer's email
         subject: 'Your Order with Trezoar has been Placed Successfully!',
         html: `
-          <h2>Thank you for your order, ${billingAddress.firstName}!</h2>
-          <p>Your order has been placed successfully and is now being processed.</p>
-          <h3>Order Details:</h3>
-          <p><strong>Order ID:</strong> ${order._id}</p>
-          <p><strong>Total Amount:</strong> $${(totalAmount / 100).toFixed(2)}</p>
-          <p><strong>Shipping Method:</strong> ${shippingMethod}</p>
-          <p><strong>Payment Method:</strong> ${paymentMethod}</p>
-          <p>We will notify you once your order is shipped. Thank you for shopping with Trezoar!</p>
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Order Confirmation</title>
+          </head>
+          <body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                      <td style="background-color: #2c3e50; padding: 20px; text-align: center; color: #ffffff; font-size: 24px; font-weight: bold;">
+                        Trezoar
+                      </td>
+                    </tr>
+                    
+                    <!-- Greeting -->
+                    <tr>
+                      <td style="padding: 20px; font-size: 18px; color: #333;">
+                        <strong>Thank you for your order, ${billingAddress.firstName}!</strong>
+                      </td>
+                    </tr>
+      
+                    <!-- Message -->
+                    <tr>
+                      <td style="padding: 0 20px 20px; font-size: 14px; color: #555;">
+                        Your order has been placed successfully and is now being processed.
+                      </td>
+                    </tr>
+      
+                    <!-- Order Details -->
+                    <tr>
+                      <td style="padding: 0 20px 20px;">
+                        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                          <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Order ID:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${order._id}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Total Amount:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">$${(totalAmount / 100).toFixed(2)}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Shipping Method:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${shippingMethod}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Payment Method:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${paymentMethod}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+      
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 20px; font-size: 12px; color: #777; text-align: center;">
+                        We will notify you once your order is shipped.<br>
+                        Thank you for shopping with Trezoar!
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
         `
       };
+      
 
       // Email to Owner: New Order Notification
       const ownerMailOptions = {
@@ -697,18 +760,79 @@ router.post('/checkoutOrder', async (req, res) => {
         to: 'jdeep514@gmail.com', // Owner's email address
         subject: 'New Order Placed on Trezoar',
         html: `
-          <h2>New Order Alert!</h2>
-          <p>A new order has been placed on Trezoar.</p>
-          <h3>Order Details:</h3>
-          <p><strong>Order ID:</strong> ${order._id}</p>
-          <p><strong>Customer Name:</strong> ${billingAddress.firstName}</p>
-          <p><strong>Customer Email:</strong> ${billingAddress.email}</p>
-          <p><strong>Total Amount:</strong> $${(totalAmount / 100).toFixed(2)}</p>
-          <p><strong>Shipping Method:</strong> ${shippingMethod}</p>
-          <p><strong>Payment Status:</strong> ${paymentStatus}</p>
-          <p>Please review the order in the admin panel for further details.</p>
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>New Order Alert</title>
+          </head>
+          <body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                      <td style="background-color: #e74c3c; padding: 20px; text-align: center; color: #ffffff; font-size: 24px; font-weight: bold;">
+                        New Order Alert!
+                      </td>
+                    </tr>
+      
+                    <!-- Message -->
+                    <tr>
+                      <td style="padding: 20px; font-size: 16px; color: #333;">
+                        A new order has been placed on Trezoar.
+                      </td>
+                    </tr>
+      
+                    <!-- Order Details -->
+                    <tr>
+                      <td style="padding: 0 20px 20px;">
+                        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                          <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Order ID:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${order._id}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Customer Name:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${billingAddress.firstName}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Customer Email:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${billingAddress.email}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Total Amount:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">$${(totalAmount / 100).toFixed(2)}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Shipping Method:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${shippingMethod}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;"><strong>Payment Status:</strong></td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${paymentStatus}</td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+      
+                    <!-- Footer -->
+                    <tr>
+                      <td style="padding: 20px; font-size: 12px; color: #777; text-align: center;">
+                        Please review the order in the admin panel for further details.
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
         `
       };
+      
 
       // Send customer email
       transporter.sendMail(customerMailOptions, (error, info) => {
